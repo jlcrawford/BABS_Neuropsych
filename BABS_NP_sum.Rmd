@@ -1,0 +1,347 @@
+---
+title: "BABS Neuropsych Summary"
+author: "JLC"
+date: "`r Sys.Date()`"
+output: html_document
+---
+# Brandeis Aging Brain Study (BABS) Neuropsych Battery: Descriptive Summary
+
+```{r setup, warning=FALSE, message=FALSE}
+rm(list=ls())
+
+# Packages
+library(lme4); library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(tidyverse)
+
+#Create data directories
+NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
+
+#Make data frames for Cog-ED, demographics info, and post-task questionnaire
+BABS.NP.demo <- read_xlsx(NP.path, sheet = "Demographics")
+BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
+BABS.NP.sess2 <- read_xlsx(NP.path, sheet = "Session 2")
+```
+
+# Behavioral Measures
+## General Cognitive Function
+
+### MMSE
+
+```{r MMSE, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Working Memory
+### Digit Span
+#### Forward
+
+```{r DigSpan_for, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+#### Backward
+
+```{r DigSpan_back, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Keep Track Task
+
+```{r KeepTrack, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Spatial N-Back
+
+```{r NBack, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Inhibition
+### Stroop (Paper version)
+
+```{r Stroop_paper, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Stroop (Computer version)
+
+```{r Stroop_comp, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### NIH Toolbox: Flanker
+
+```{r Flanker, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Cognitive Flexibility
+### NIH Toolbox: Dimensional Change Card Sort (DCCS)
+
+```{r DCCS, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Cognitive Reflection Test
+
+```{r CogReflect, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Learning and Memory
+### California Verbal Learning Test (CVLT)
+
+```{r CVLT, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Face-Name Associative Memory Examination (FNAME)
+
+```{r FNAME, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Visuospatial
+### Visual Reproduction
+
+```{r VisRepro, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Fluid Intelligence
+### WASI-II Matrix Reasoning
+
+```{r MatrixReason, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Creativity
+### Remote Associates Test
+
+```{r RemoteAssoc, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Alternative Uses Task
+
+```{r AltUse, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Crystalized Intelligence
+### WASI-II Vocab
+
+```{r WASI_vocab, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### C-Test
+
+```{r CTest, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+# Individual Difference Questionnaires
+## Lifestyle
+### Lifetime Experiences Questionnaire (LEQ)
+
+```{r LEQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### BABS Physical Activities Questionnaire
+
+```{r PhysActivity, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Depressive and Anxious Traits
+### Geriatric Depression Questionnaire (GDS)
+
+```{r GDS, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Mood and Anxiety Symptom Questionnaire (MASQ-30)
+
+```{r MASQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Penn State Worry Questionnaire
+
+```{r PSWQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Sleep
+### Pittsburgh Sleep Quality Index (PSQI)
+
+```{r PSQI, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Berkeley Retrospective Sleep Questionnaire (BRSQ)
+
+```{r BRSQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Meta-cognition
+### Multifactorial Memory Questionnaire
+
+```{r MMQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Metamemory Questionnaire for Older Adults
+
+```{r OA_Metamemory, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Behavior Rating Inventory of Executive Function-Adult (BRIEF-A)
+
+```{r Brief_A, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Motivation
+### Selection-Optimization-Compensation Questionnaire (SOCQ)
+
+```{r SOCQ, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### BIS/BAS
+
+```{r BISBAS, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Barratt Impulsiveness Scale (BIS-11)
+
+```{r BIS, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Grit Scale
+
+```{r Grit, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+### Zimbardo Time Perspective Scale
+
+```{r ZTPS, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+## Misc
+### UCSF Early Developmental History Form
+
+```{r UCSF_Dev, warning=FALSE, message=FALSE}
+
+
+
+
+```
