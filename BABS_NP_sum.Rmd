@@ -88,12 +88,38 @@ p.DigSpan.B
 ```
 
 ### Keep Track Task
+Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1).
 
 ```{r KeepTrack, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.KeepTrack <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, KEEPTRACK_ONECATEGORY_TOTAL, KEEPTRACK_TWOCATEGORIES_TOTAL, KEEPTRACK_FOURCATEGORIES_TOTAL) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+#changing observed values to numeric values
+d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL)
+d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL)
+d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL)
+#counting the number of observations and summarizing mean & SD
+Keep.Track.sum <- d.KeepTrack %>% summarise(count.1Categ = sum(!is.na(KEEPTRACK_ONECATEGORY_TOTAL)),
+         mean.1Categ = mean(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
+         SD.1Categ = sd(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
+         count.2Categ = sum(!is.na(KEEPTRACK_TWOCATEGORIES_TOTAL)),
+         mean.2Categ = mean(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
+         SD.2Categ = sd(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
+         count.4Categ = sum(!is.na(KEEPTRACK_FOURCATEGORIES_TOTAL)),
+         mean.4Categ = mean(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),
+         SD.4Categ = sd(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),)
+Keep.Track.sum
+#creating long data frame
+d.KeepTrack.long <- d.KeepTrack %>% 
+  pivot_longer(names_to = "Level", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+d.KeepTrack.long$Level <- factor(d.KeepTrack.long$Level, levels = c("KEEPTRACK_ONECATEGORY_TOTAL","KEEPTRACK_TWOCATEGORIES_TOTAL","KEEPTRACK_FOURCATEGORIES_TOTAL"), 
+                                 labels = c(1,2,4))
+#plotting distribution of scores
+p.KeepTrack <- ggplot(d.KeepTrack.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "Keep Track Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~Level)
+p.KeepTrack
 ```
 
 ### Spatial N-Back
