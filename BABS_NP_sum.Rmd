@@ -10,15 +10,15 @@ output: html_document
 rm(list=ls())
 
 # Packages
-library(lme4); library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(tidyverse)
+library(lme4); library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl);
+library(tidyverse)
 
 #Create data directories
 NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
 
-#Make data frames for Cog-ED, demographics info, and post-task questionnaire
+#Make data frames for neuropsych battery items from excel spreadsheet
 BABS.NP.demo <- read_xlsx(NP.path, sheet = "Demographics")
 BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
-BABS.NP.sess2 <- read_xlsx(NP.path, sheet = "Session 2")
 ```
 
 # Behavioral Measures
@@ -27,30 +27,64 @@ BABS.NP.sess2 <- read_xlsx(NP.path, sheet = "Session 2")
 ### MMSE
 
 ```{r MMSE, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.MMSE <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, MMSE) %>% distinct(BABS_ID, .keep_all = T)
+#counting the number of observations and summarizing mean & SD
+MMSE.sum <- d.MMSE %>% summarise(count.MMSE = sum(!is.na(MMSE)),
+         mean.MMSE = mean(MMSE, na.rm=T),
+         SD.MMSE = sd(MMSE, na.rm=T))
+MMSE.sum
+#plotting distribution of scores
+p.MMSE <- ggplot(d.MMSE, aes(MMSE)) +
+  geom_bar() + scale_x_continuous(limits = c(20,31), breaks = seq(20,30,1)) +
+  labs(title = "MMSE Scores in BABS Sample") +
+  theme_classic()
+p.MMSE
 ```
 
 ## Working Memory
 ### Digit Span
 #### Forward
+Note to Jenny: BABS_259 has forward value of "8 or 7"; presently excluded for being non-numeric. Verify actual score.
 
 ```{r DigSpan_for, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.DigSpan.F <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_FORWARD) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.DigSpan.F$DIGITSPAN_FORWARD <- as.numeric(d.DigSpan.F$DIGITSPAN_FORWARD)
+#counting the number of observations and summarizing mean & SD
+DigSpan.F.sum <- d.DigSpan.F %>% summarise(count.Forward.DigSpan = sum(!is.na(DIGITSPAN_FORWARD)),
+         mean.Forward.DigSpan = mean(DIGITSPAN_FORWARD, na.rm=T),
+         SD.Forward.DigSpan = sd(DIGITSPAN_FORWARD, na.rm=T))
+DigSpan.F.sum
+#plotting distribution of scores
+p.DigSpan.F <- ggplot(d.DigSpan.F, aes(DIGITSPAN_FORWARD)) +
+  geom_bar() + scale_x_continuous(limits = c(2,15), breaks = seq(2,14,1)) +
+  labs(title = "Forward Digit Span Scores in BABS Sample") +
+  theme_classic()
+p.DigSpan.F
 ```
 
 #### Backward
+Note to Jenny: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS.
+Also, there are currently a different number of observations for forward and backward scores, which needs to be investigated.
 
 ```{r DigSpan_back, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.DigSpan.B <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_BACKWARD) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.DigSpan.B$DIGITSPAN_BACKWARD <- as.numeric(d.DigSpan.B$DIGITSPAN_BACKWARD)
+#counting the number of observations and summarizing mean & SD
+DigSpan.B.sum <- d.DigSpan.B %>% summarise(count.Backward.DigSpan = sum(!is.na(DIGITSPAN_BACKWARD)),
+         mean.Backward.DigSpan = mean(DIGITSPAN_BACKWARD, na.rm=T),
+         SD.Backward.DigSpan = sd(DIGITSPAN_BACKWARD, na.rm=T))
+DigSpan.B.sum
+#plotting distribution of scores
+p.DigSpan.B <- ggplot(d.DigSpan.B, aes(DIGITSPAN_BACKWARD)) +
+  geom_bar() + scale_x_continuous(limits = c(2,15), breaks = seq(2,14,1)) +
+  labs(title = "Backward Digit Span Scores in BABS Sample") +
+  theme_classic()
+p.DigSpan.B
 ```
 
 ### Keep Track Task
