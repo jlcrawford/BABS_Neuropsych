@@ -47,7 +47,7 @@ p.MMSE
 ## Working Memory {.tabset}
 ### Digit Span
 #### Forward
-Note to Jenny: BABS_259 has forward value of "8 or 7"; presently excluded for being non-numeric. Verify actual score.
+Note: BABS_259 has forward value of "8 or 7"; presently excluded for being non-numeric. Verify actual score.
 
 ```{r DigSpan_for, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -69,7 +69,7 @@ p.DigSpan.F
 ```
 
 #### Backward
-Note to Jenny: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS.
+Note: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS.
 Also, there are currently a different number of observations for forward and backward scores, which needs to be investigated.
 
 ```{r DigSpan_back, warning=FALSE, message=FALSE}
@@ -92,7 +92,7 @@ p.DigSpan.B
 ```
 
 ### Keep Track Task
-Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1).
+Note: Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1).
 
 ```{r KeepTrack, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -140,7 +140,7 @@ p.KeepTrack
 
 ## Inhibition {.tabset}
 ### Stroop (Paper version)
-Note to Jenny: Verify that this is only part of the later battery (i.e., only later Ss have these values).
+Note: Verify that this is only part of the later battery (i.e., only later Ss have these values).
 
 ```{r Stroop_paper, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -174,9 +174,6 @@ p.KeepTrack <- ggplot(d.KeepTrack.long, aes(Score)) +
   labs(title = "Keep Track Scores in BABS Sample") +
   theme_classic() + facet_grid(.~Level)
 p.KeepTrack
-
-
-
 ```
 
 ### Stroop (Computer version)
@@ -247,50 +244,117 @@ p.KeepTrack
 
 ## Fluid Intelligence {.tabset}
 ### WASI-II Matrix Reasoning
+Note: Missing scores for most participants after BABS_200; is this measure still being collected? Also, need to look up the range of acceptable scores to verify values.
 
 ```{r MatrixReason, warning=FALSE, message=FALSE}
-
-
-
-
+d.matrix <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_MATRIX_SCORE) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.matrix$WASI_MATRIX_SCORE <- as.numeric(d.matrix$WASI_MATRIX_SCORE)
+#counting the number of observations and summarizing mean & SD
+Matrix.sum <- d.matrix %>% summarise(count = sum(!is.na(WASI_MATRIX_SCORE)),
+         range = range(WASI_MATRIX_SCORE, na.rm = T),                       
+         mean = mean(WASI_MATRIX_SCORE, na.rm=T),
+         SD = sd(WASI_MATRIX_SCORE, na.rm=T))
+kable(Matrix.sum, col.names = c("Count", "Range", "Mean", "SD"),
+      caption = "WASI Matrix Reasoning Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.matrix <- ggplot(d.matrix, aes(WASI_MATRIX_SCORE)) +
+  geom_bar() + 
+  labs(title = "WASI Matrix Reasoning Scores in BABS Sample") +
+  theme_classic()
+p.matrix
 ```
 
 ## Creativity {.tabset}
 ### Remote Associates Test
+Note: Stopped administration after BABS_173. All values fall in allowable range (0-12).
 
 ```{r RemoteAssoc, warning=FALSE, message=FALSE}
-
-
-
-
+d.remoteAssoc <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, REMOTE_ASSOCIATES) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.remoteAssoc$REMOTE_ASSOCIATES <- as.numeric(d.remoteAssoc$REMOTE_ASSOCIATES)
+#counting the number of observations and summarizing mean & SD
+remoteAssoc.sum <- d.remoteAssoc %>% summarise(count = sum(!is.na(REMOTE_ASSOCIATES)),
+         range = range(REMOTE_ASSOCIATES, na.rm = T),                       
+         mean = mean(REMOTE_ASSOCIATES, na.rm=T),
+         SD = sd(REMOTE_ASSOCIATES, na.rm=T))
+kable(remoteAssoc.sum, col.names = c("Count", "Range", "Mean", "SD"),
+      caption = "Remote Associates Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.remoteAssoc <- ggplot(d.remoteAssoc, aes(REMOTE_ASSOCIATES)) +
+  geom_bar() + 
+  labs(title = "Remote Associates Scores in BABS Sample") +
+  theme_classic()
+p.remoteAssoc
 ```
 
 ### Alternative Uses Task
+Note: There are only 4 observations of this in the entire battery contained within the sheet.
 
 ```{r AltUse, warning=FALSE, message=FALSE}
-
-
-
-
+d.altUse <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, ALTERTIVE_USES) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.altUse$ALTERTIVE_USES <- as.numeric(d.altUse$ALTERTIVE_USES)
+#counting the number of observations and summarizing mean & SD
+altUse.sum <- d.altUse %>% summarise(count = sum(!is.na(ALTERTIVE_USES)),
+         range = range(ALTERTIVE_USES, na.rm = T),                       
+         mean = mean(ALTERTIVE_USES, na.rm=T),
+         SD = sd(ALTERTIVE_USES, na.rm=T))
+kable(altUse.sum, col.names = c("Count", "Range", "Mean", "SD"),
+      caption = "Alternative Uses Task Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.altUse <- ggplot(d.altUse, aes(ALTERTIVE_USES)) +
+  geom_bar() + 
+  labs(title = "Alternative Uses Scores in BABS Sample") +
+  theme_classic()
+p.altUse
 ```
 
 ## Crystalized Intelligence {.tabset}
 ### WASI-II Vocab
+Note: Missing scores for most participants after BABS_200; is this measure still being collected? Also, need to look up the range of acceptable scores to verify values.
 
 ```{r WASI_vocab, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.vocab <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_VOCAB_SCORE) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.vocab$WASI_VOCAB_SCORE <- as.numeric(d.vocab$WASI_VOCAB_SCORE)
+#counting the number of observations and summarizing mean & SD
+Vocab.sum <- d.vocab %>% summarise(count = sum(!is.na(WASI_VOCAB_SCORE)),
+         range = range(WASI_VOCAB_SCORE, na.rm = T),                       
+         mean = mean(WASI_VOCAB_SCORE, na.rm=T),
+         SD = sd(WASI_VOCAB_SCORE, na.rm=T))
+kable(Vocab.sum, col.names = c("Count", "Range", "Mean", "SD"),
+      caption = "WASI Vocab Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.vocab <- ggplot(d.vocab, aes(WASI_VOCAB_SCORE)) +
+  geom_bar() + 
+  labs(title = "WASI Vocab Scores in BABS Sample") +
+  theme_classic()
+p.vocab
 ```
 
 ### C-Test
+Note: Stopped administration after BABS_173. Unknown range of acceptable values.
 
 ```{r CTest, warning=FALSE, message=FALSE}
-
-
-
-
+#creating data frame with relevant variables
+d.cTest <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, CTEST) %>%
+                                          distinct(BABS_ID, .keep_all = T)
+d.cTest$CTEST <- as.numeric(d.cTest$CTEST)
+#counting the number of observations and summarizing mean & SD
+cTest.sum <- d.cTest %>% summarise(count = sum(!is.na(CTEST)),
+         range = range(CTEST, na.rm = T),                       
+         mean = mean(CTEST, na.rm=T),
+         SD = sd(CTEST, na.rm=T))
+kable(cTest.sum, col.names = c("Count", "Range", "Mean", "SD"),
+      caption = "C-Test Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.cTest <- ggplot(d.cTest, aes(CTEST)) +
+  geom_bar() + 
+  labs(title = "C-Test Scores in BABS Sample") +
+  theme_classic()
+p.cTest
 ```
 
 # Individual Difference Questionnaires {.tabset}
