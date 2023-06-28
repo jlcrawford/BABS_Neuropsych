@@ -38,12 +38,14 @@ NIH.toolbox.path <- data_frame()
 for (sid in 1:length(sub.IDs)) {   
       NIH.fname <- paste0(subj.path, sub.IDs[sid], "/Session_1/NIH_TOOLBOX/");
       file <- dir(NIH.fname, pattern = "*Structure Assessment Scores.csv");
-      file_data <- read.csv(file, header = T);
+      setwd(NIH.fname);
+      file_data <- read_csv(file, col_types = "c");
 NIH.toolbox.path <- bind_rows(NIH.toolbox.path, file_data);
 }
-
-#View(WM.coged.path)
-#write.csv(WM.coged.path, file = "WM.coged.csv", row.names = FALSE)}
+#need to clean up variable entry of subject IDs
+d.NIH <- NIH.toolbox.path %>%
+  mutate(ID = parse_number(NIH.toolbox.path$PIN),
+         BABS_ID = (paste0("BABS",ID)))
 ```
 
 # Behavioral Measures {.tabset}
@@ -232,22 +234,49 @@ p.Stroop.comp
 ```
 
 ### NIH Toolbox: Flanker
+Note: Raw scores might not be informative since almost everyone has this same raw score.
 
 ```{r Flanker, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.Flanker <- d.NIH %>% select(BABS_ID, TestName, Key, Value) %>%
+ filter(TestName == "Flank_2") %>% filter(Key == "RawScore") %>%
+  mutate_at(vars(starts_with("Value")), as.numeric)
+  
+Flanker.sum <- d.Flanker %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "TestName*") %>% filter(Variable != "Key*")
 
+kable(Flanker.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "NIH Toolbox Flanker (Raw Score) Summary Table") %>% kable_styling()
 
-
-
+#plotting summary of scores across condition
+p.Flanker <- ggplot(d.Flanker, aes(Value)) +
+  geom_histogram() +
+  labs(title = "Flanker Raw Scores in BABS Sample") +
+  theme_classic()
+p.Flanker
 ```
 
 ## Cognitive Flexibility {.tabset}
 ### NIH Toolbox: Dimensional Change Card Sort (DCCS)
 
 ```{r DCCS, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.DCCS<- d.NIH %>% select(BABS_ID, TestName, Key, Value) %>%
+ filter(TestName == "DCCS_2") %>% filter(Key == "RawScore") %>%
+  mutate_at(vars(starts_with("Value")), as.numeric)
+  
+DCCS.sum <- d.DCCS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "TestName*") %>% filter(Variable != "Key*")
 
+kable(DCCS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "NIH Toolbox DCCS (Raw Score) Summary Table") %>% kable_styling()
 
-
-
+#plotting summary of scores across condition
+p.DCCS <- ggplot(d.DCCS, aes(Value)) +
+  geom_histogram() +
+  labs(title = "DCCS Raw Scores in BABS Sample") +
+  theme_classic()
+p.DCCS
 ```
 
 ### Cognitive Reflection Test
@@ -650,14 +679,14 @@ SOCQ.sum <- d.SOCQ %>% describe() %>% select(-vars) %>% rownames_to_column(var =
 kable(SOCQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Seletion-Optimization-Compensation Summary Table") %>% kable_styling()
 #creating long data frame
-d.BRSQ.long <- d.BRSQ %>% 
+d.SOCQ.long <- d.SOCQ %>% 
   pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
-#plotting distribution of scores**
-p.GDS <- ggplot(d.GDS, aes(GDS)) +
+#plotting distribution of scores
+p.SOCQ <- ggplot(d.SOCQ.long, aes(Score)) +
   geom_bar() + 
-  labs(title = "GDS Scores in BABS Sample") +
-  theme_classic()
-p.GDS
+  labs(title = "SOC Questionnaire Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.SOCQ
 ```
 
 ### BIS/BAS
@@ -673,12 +702,15 @@ BISBAS.sum <- d.BISBAS %>% describe() %>% select(-vars) %>% rownames_to_column(v
 
 kable(BISBAS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "BIS-BAS Summary Table") %>% kable_styling()
-#plotting distribution of scores**
-p.GDS <- ggplot(d.GDS, aes(GDS)) +
+#creating long data frame
+d.BISBAS.long <- d.BISBAS %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores
+p.BISBAS <- ggplot(d.BISBAS.long, aes(Score)) +
   geom_bar() + 
-  labs(title = "GDS Scores in BABS Sample") +
-  theme_classic()
-p.GDS
+  labs(title = "BIS-BAS Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~ Facet)
+p.BISBAS
 ```
 
 ### Barratt Impulsiveness Scale (BIS-11)
@@ -694,12 +726,15 @@ BIS.sum <- d.BIS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "
 
 kable(BIS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "BIS Summary Table") %>% kable_styling()
-#plotting distribution of scores**
-p.GDS <- ggplot(d.GDS, aes(GDS)) +
+#creating long data frame
+d.BIS.long <- d.BIS %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores
+p.BIS <- ggplot(d.BIS.long, aes(Score)) +
   geom_bar() + 
-  labs(title = "GDS Scores in BABS Sample") +
-  theme_classic()
-p.GDS
+  labs(title = "BIS Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~ Facet)
+p.BIS
 ```
 
 ### Grit Scale
@@ -715,12 +750,15 @@ Grit.sum <- d.Grit %>% describe() %>% select(-vars) %>% rownames_to_column(var =
 
 kable(Grit.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Grit Summary Table") %>% kable_styling()
-#plotting distribution of scores**
-p.GDS <- ggplot(d.GDS, aes(GDS)) +
+#creating long data frame
+d.Grit.long <- d.Grit %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores
+p.Grit <- ggplot(d.Grit.long, aes(Score)) +
   geom_bar() + 
-  labs(title = "GDS Scores in BABS Sample") +
-  theme_classic()
-p.GDS
+  labs(title = "Grit Questionnaire Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.Grit
 ```
 
 ### Zimbardo Time Perspective Scale
