@@ -12,14 +12,38 @@ output:
 rm(list=ls())
 
 # Packages
-library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl); library(tidyverse)
+library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl); library(psych); library(tidyverse)
 
 #Create data directories
 NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
+subj.path <-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/"
 
 #Make data frames for neuropsych battery items from excel spreadsheet
 BABS.NP.demo <- read_xlsx(NP.path, sheet = "Demographics")
 BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
+
+#Make data frame for NIH toolbox data
+sub.IDs <- c("BABS178","BABS182","BABS184","BABS186","BABS187","BABS188","BABS189","BABS190","BABS191","BABS192",
+             "BABS193","BABS194","BABS195","BABS197","BABS198","BABS199","BABS200","BABS201","BABS203","BABS204",
+             "BABS207","BABS208","BABS209","BABS210","BABS212","BABS213","BABS214","BABS215","BABS216","BABS217",
+             "BABS218","BABS219","BABS220","BABS221","BABS222","BABS223","BABS224","BABS225","BABS226","BABS227",
+             "BABS228","BABS229","BABS230","BABS231","BABS232","BABS232","BABS233","BABS234","BABS235","BABS236",
+             "BABS237","BABS238","BABS239","BABS240","BABS241","BABS242","BABS243","BABS244","BABS245","BABS246",
+             "BABS247","BABS248","BABS249","BABS251","BABS252","BABS253","BABS254","BABS255","BABS256","BABS257",
+             "BABS258","BABS259","BABS260","BABS261","BABS262","BABS263","BABS264","BABS265","BABS267","BABS268",
+             "BABS270","BABS271","BABS274","BABS275","BABS276","BABS277","BABS278","BABS280","BABS281","BABS282",
+             "BABS283","BABS285","BABS287","BABS289","BABS212","BABS290","BABS291","BABS293","BABS294","BABS295",
+             "BABS297","BABS298","BABS299","BABS300","BABS301","BABS302","BABS304","BABS305","BABS310")
+NIH.toolbox.path <- data_frame()
+for (sid in 1:length(sub.IDs)) {   
+      NIH.fname <- paste0(subj.path, sub.IDs[sid], "/Session_1/NIH_TOOLBOX/");
+      file <- dir(NIH.fname, pattern = "*Structure Assessment Scores.csv");
+      file_data <- read.csv(file, header = T);
+NIH.toolbox.path <- bind_rows(NIH.toolbox.path, file_data);
+}
+
+#View(WM.coged.path)
+#write.csv(WM.coged.path, file = "WM.coged.csv", row.names = FALSE)}
 ```
 
 # Behavioral Measures {.tabset}
@@ -29,12 +53,13 @@ BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
 
 ```{r MMSE, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.MMSE <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, MMSE) %>% distinct(BABS_ID, .keep_all = T)
+d.MMSE <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, MMSE) %>% distinct(BABS_ID, .keep_all = T) %>%
+    mutate_at(vars(starts_with("MMSE")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-MMSE.sum <- d.MMSE %>% summarise(count.MMSE = sum(!is.na(MMSE)),
-         mean.MMSE = mean(MMSE, na.rm=T),
-         SD.MMSE = sd(MMSE, na.rm=T))
-kable(MMSE.sum, col.names = c("Count","Mean", "SD"),
+MMSE.sum <- d.MMSE %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(MMSE.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "MMSE Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.MMSE <- ggplot(d.MMSE, aes(MMSE)) +
@@ -52,13 +77,13 @@ Note: BABS_259 has forward value of "8 or 7"; presently excluded for being non-n
 ```{r DigSpan_for, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
 d.DigSpan.F <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_FORWARD) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.DigSpan.F$DIGITSPAN_FORWARD <- as.numeric(d.DigSpan.F$DIGITSPAN_FORWARD)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+    mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-DigSpan.F.sum <- d.DigSpan.F %>% summarise(count.Forward.DigSpan = sum(!is.na(DIGITSPAN_FORWARD)),
-         mean.Forward.DigSpan = mean(DIGITSPAN_FORWARD, na.rm=T),
-         SD.Forward.DigSpan = sd(DIGITSPAN_FORWARD, na.rm=T))
-kable(DigSpan.F.sum, col.names = c("Count","Mean", "SD"),
+DigSpan.F.sum <- d.DigSpan.F %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(DigSpan.F.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Forward Digit Span Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.DigSpan.F <- ggplot(d.DigSpan.F, aes(DIGITSPAN_FORWARD)) +
@@ -69,19 +94,18 @@ p.DigSpan.F
 ```
 
 #### Backward
-Note: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS.
-Also, there are currently a different number of observations for forward and backward scores, which needs to be investigated.
+Note: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. BABS_259 has forward value of "5 or 6" Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS. Also, there are currently a different number of observations for forward and backward scores, which needs to be investigated.
 
 ```{r DigSpan_back, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
 d.DigSpan.B <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_BACKWARD) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.DigSpan.B$DIGITSPAN_BACKWARD <- as.numeric(d.DigSpan.B$DIGITSPAN_BACKWARD)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-DigSpan.B.sum <- d.DigSpan.B %>% summarise(count.Backward.DigSpan = sum(!is.na(DIGITSPAN_BACKWARD)),
-         mean.Backward.DigSpan = mean(DIGITSPAN_BACKWARD, na.rm=T),
-         SD.Backward.DigSpan = sd(DIGITSPAN_BACKWARD, na.rm=T))
-kable(DigSpan.B.sum, col.names = c("Count","Mean", "SD"),
+DigSpan.B.sum <- d.DigSpan.B %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(DigSpan.B.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Backward Digit Span Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.DigSpan.B <- ggplot(d.DigSpan.B, aes(DIGITSPAN_BACKWARD)) +
@@ -92,35 +116,23 @@ p.DigSpan.B
 ```
 
 ### Keep Track Task
-Note: Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1).
+Note: Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1). Inconsistent number of observations across conditions.
 
 ```{r KeepTrack, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.KeepTrack <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, KEEPTRACK_ONECATEGORY_TOTAL, KEEPTRACK_TWOCATEGORIES_TOTAL, KEEPTRACK_FOURCATEGORIES_TOTAL) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-#changing observed values to numeric values
-d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL)
-d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL)
-d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL)
+d.KeepTrack <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("KEEP"), THREECATEGORIES_TOTAL) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(ends_with("TOTAL")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-Keep.Track.sum <- d.KeepTrack %>% summarise(count.1Categ = sum(!is.na(KEEPTRACK_ONECATEGORY_TOTAL)),
-         mean.1Categ = mean(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
-         SD.1Categ = sd(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
-         count.2Categ = sum(!is.na(KEEPTRACK_TWOCATEGORIES_TOTAL)),
-         mean.2Categ = mean(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
-         SD.2Categ = sd(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
-         count.4Categ = sum(!is.na(KEEPTRACK_FOURCATEGORIES_TOTAL)),
-         mean.4Categ = mean(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),
-         SD.4Categ = sd(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),)
-kable(Keep.Track.sum, col.names = c("Count: 1 Category","Mean: 1 Category", "SD: 1 Category", 
-                                    "Count: 2 Category","Mean: 2 Category", "SD: 2 Category",
-                                    "Count: 4 Category","Mean: 4 Category", "SD: 4 Category"),
+KeepTrack.sum <- d.KeepTrack %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(KeepTrack.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Keep Track Summary Table") %>% kable_styling()
 #creating long data frame
 d.KeepTrack.long <- d.KeepTrack %>% 
-  pivot_longer(names_to = "Level", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
-d.KeepTrack.long$Level <- factor(d.KeepTrack.long$Level, levels = c("KEEPTRACK_ONECATEGORY_TOTAL","KEEPTRACK_TWOCATEGORIES_TOTAL","KEEPTRACK_FOURCATEGORIES_TOTAL"), 
-                                 labels = c(1,2,4))
+  pivot_longer(names_to = "Level", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`, KEEPTRACK_DIFFICULTY_LEVEL))
+d.KeepTrack.long$Level <- factor(d.KeepTrack.long$Level, levels = c("KEEPTRACK_ONECATEGORY_TOTAL","KEEPTRACK_TWOCATEGORIES_TOTAL","THREECATEGORIES_TOTAL", "KEEPTRACK_FOURCATEGORIES_TOTAL"), labels = c(1,2,3,4))
 #plotting distribution of scores
 p.KeepTrack <- ggplot(d.KeepTrack.long, aes(Score)) +
   geom_bar() + 
@@ -130,59 +142,93 @@ p.KeepTrack
 ```
 
 ### Spatial N-Back
+Note: Different number of observations across 1- and 2-back. Need to think about whether we want to use these results; pattern of results is highly consistent with OAs not understanding the directions initially, with better performance for 2- vs. 1-back (plotted below).
 
 ```{r NBack, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.NBack <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("NBACK")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+    mutate_at(vars(ends_with("BACK")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+Nback.sum <- d.NBack %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
+kable(Nback.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Spatial N-Back Summary Table") %>% kable_styling()
+#creating long data frame
+d.Nback.long <- d.NBack %>% 
+  pivot_longer(names_to = "Level", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`, NBACK_VERSION, NBACK_DIFFICULTY_LEVEL))
+d.Nback.long$Level <- factor(d.Nback.long$Level, levels = c("NBACK_ONEBACK","NBACK_TWOBACK"), 
+                                 labels = c(1,2))
+#plotting distribution of scores
+p.Nback <- ggplot(d.Nback.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "N-Back Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~Level)
+p.Nback
 
-
-
+#adding a new variable for ease of plotting
+Nback.sum$Level <- factor(Nback.sum$Variable, levels = c("NBACK_ONEBACK", "NBACK_TWOBACK"), labels = c(1,2))
+d.Nback.long$mean <- d.Nback.long$Score
+fig.Nback.lines <- ggplot(Nback.sum %>% filter(Level == 1 | Level == 2), aes(x=Level, y=mean)) + 
+  theme(plot.title = element_text(hjust = 0.5), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"), axis.title.y = element_text(face="bold", size=16),legend.title = element_text(face="bold", size=16)) +
+  geom_bar(stat="identity", position=position_dodge(), alpha=.45, size=1.5) +
+  geom_errorbar(position=position_dodge(width=0.9), aes(ymin=mean-se, ymax=mean+se), width=.2, size=1.25) +  
+  geom_point(data = d.Nback.long, aes(x=Level, y=mean),
+             stat="identity", alpha=0.7) +
+  geom_line(data = d.Nback.long, aes(x=Level, y=mean, group=BABS_ID, colour = factor(BABS_ID)), alpha = .5) +
+  xlab("N-Back Level") + ylab("Percent Correct")
+fig.Nback <- fig.Nback.lines + guides(colour=FALSE)
+fig.Nback
 ```
 
 ## Inhibition {.tabset}
 ### Stroop (Paper version)
-Note: Verify that this is only part of the later battery (i.e., only later Ss have these values).
+Note: Verify that this is only part of the later battery (i.e., only later Ss have these values). Inconsistent number of participants across conditions.
 
 ```{r Stroop_paper, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.Stroop.paper <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, STROOP_WORD_CORRECT,
-                                           STROOP_COLOR_INCORRECT, STROOP_COLOR_CORRECT, STROOP_COLOR_INCORRECT,
-                                           STROOP_COLORWORD_CORRECT, STROOP_COLORWORD_INCORRECT) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-#changing observed values to numeric values
-d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_ONECATEGORY_TOTAL)
-d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_TWOCATEGORIES_TOTAL)
-d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL <- as.numeric(d.KeepTrack$KEEPTRACK_FOURCATEGORIES_TOTAL)
-#counting the number of observations and summarizing mean & SD
-Keep.Track.sum <- d.KeepTrack %>% summarise(count.1Categ = sum(!is.na(KEEPTRACK_ONECATEGORY_TOTAL)),
-         mean.1Categ = mean(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
-         SD.1Categ = sd(KEEPTRACK_ONECATEGORY_TOTAL, na.rm=T),
-         count.2Categ = sum(!is.na(KEEPTRACK_TWOCATEGORIES_TOTAL)),
-         mean.2Categ = mean(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
-         SD.2Categ = sd(KEEPTRACK_TWOCATEGORIES_TOTAL, na.rm=T),
-         count.4Categ = sum(!is.na(KEEPTRACK_FOURCATEGORIES_TOTAL)),
-         mean.4Categ = mean(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),
-         SD.4Categ = sd(KEEPTRACK_FOURCATEGORIES_TOTAL, na.rm=T),)
-Keep.Track.sum
-#creating long data frame
-d.KeepTrack.long <- d.KeepTrack %>% 
-  pivot_longer(names_to = "Level", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
-d.KeepTrack.long$Level <- factor(d.KeepTrack.long$Level, levels = c("KEEPTRACK_ONECATEGORY_TOTAL","KEEPTRACK_TWOCATEGORIES_TOTAL","KEEPTRACK_FOURCATEGORIES_TOTAL"), 
-                                 labels = c(1,2,4))
-#plotting distribution of scores
-p.KeepTrack <- ggplot(d.KeepTrack.long, aes(Score)) +
-  geom_bar() + 
-  labs(title = "Keep Track Scores in BABS Sample") +
-  theme_classic() + facet_grid(.~Level)
-p.KeepTrack
+d.Stroop.paper <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("STROOP")) %>%
+  select(-STROOP_INCONG_MINUS_CONG_CORR) %>% distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("STROOP")), as.numeric)
+  
+Stroop.paper.sum <- d.Stroop.paper %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(Stroop.paper.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Stroop Paper Summary Table") %>% kable_styling()
+
+#plotting summary of scores across condition
+##changing variable name for ease of plotting
+Stroop.paper.sum$Variable <- factor(Stroop.paper.sum$Variable, levels = c("STROOP_WORD_CORRECT", "STROOP_COLOR_CORRECT", "STROOP_COLORWORD_CORRECT", "STROOP_WORD_INCORRECT", "STROOP_COLOR_INCORRECT", "STROOP_COLORWORD_INCORRECT"), labels = c("Word-Correct", "Color-Correct", "ColorWord-Correct", "Word-Incorrect","Color-Incorrect","ColorWord-Incorrect"))
+p.Stroop.paper <- ggplot(Stroop.paper.sum, aes(x=Variable, y=mean)) +
+  geom_bar(stat="identity", position=position_dodge(), alpha=.45, size=1.5) +
+  geom_errorbar(position=position_dodge(width=0.9), aes(ymin=mean-se, ymax=mean+se), width=.2, size=1.25) + 
+  labs(title = "Stroop (Paper: Items in 45s interval) in BABS Sample") +
+  theme_classic()
+p.Stroop.paper
 ```
 
 ### Stroop (Computer version)
 
 ```{r Stroop_comp, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.Stroop.comp <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, ends_with("CORR")) %>%
+ distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("STROOP")), as.numeric)
+  
+Stroop.comp.sum <- d.Stroop.comp %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
+kable(Stroop.comp.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Stroop (Stroop Effect in ms) Summary Table") %>% kable_styling()
 
-
-
+#plotting summary of scores across condition
+p.Stroop.comp <- ggplot(d.Stroop.comp, aes(STROOP_INCONG_MINUS_CONG_CORR)) +
+  geom_histogram() +
+  labs(title = "Average Stroop Effect per Subject in BABS Sample") +
+  theme_classic()
+p.Stroop.comp
 ```
 
 ### NIH Toolbox: Flanker
@@ -205,41 +251,78 @@ p.KeepTrack
 ```
 
 ### Cognitive Reflection Test
+Note: Should look up range to see if negative values are within the acceptable range of values; BABS_031 is the only negative score (-3)
 
 ```{r CogReflect, warning=FALSE, message=FALSE}
+d.CRT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CRT")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("CRT")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+CRT.sum <- d.CRT %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(CRT.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Cognitive Relfection Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.CRT <- ggplot(d.CRT, aes(CRT)) +
+  geom_bar() + 
+  labs(title = "Cognitive Relfection Scores in BABS Sample") +
+  theme_classic()
+p.CRT
 ```
 
 ## Learning and Memory {.tabset}
 ### California Verbal Learning Test (CVLT)
+Note: Should look into _REPETITIONS scores; ranges 0-49, but the mean is ~4.
 
 ```{r CVLT, warning=FALSE, message=FALSE}
+d.CVLT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CVLT")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("CVLT")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+CVLT.sum <- d.CVLT %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(CVLT.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "CVLT Summary Table") %>% kable_styling()
 ```
 
 ### Face-Name Associative Memory Examination (FNAME)
 
 ```{r FNAME, warning=FALSE, message=FALSE}
+d.FME <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("FME")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("FME")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+FME.sum <- d.FME %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(FME.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Face-Name Associative Memory Summary Table") %>% kable_styling()
 ```
 
 ## Visuospatial {.tabset}
 ### Visual Reproduction
 
 ```{r VisRepro, warning=FALSE, message=FALSE}
+d.WMS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("WMS")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("WMS")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+WMS.sum <- d.WMS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(WMS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Visual Reproduction Summary Table") %>% kable_styling()
+#creating long data frame
+d.WMS.long <- d.WMS %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores**
+p.WMS <- ggplot(d.WMS.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "Visual Recognition Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~ Facet)
+p.WMS
 ```
 
 ## Fluid Intelligence {.tabset}
@@ -248,14 +331,13 @@ Note: Missing scores for most participants after BABS_200; is this measure still
 
 ```{r MatrixReason, warning=FALSE, message=FALSE}
 d.matrix <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_MATRIX_SCORE) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.matrix$WASI_MATRIX_SCORE <- as.numeric(d.matrix$WASI_MATRIX_SCORE)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("WASI")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-Matrix.sum <- d.matrix %>% summarise(count = sum(!is.na(WASI_MATRIX_SCORE)),
-         range = range(WASI_MATRIX_SCORE, na.rm = T),                       
-         mean = mean(WASI_MATRIX_SCORE, na.rm=T),
-         SD = sd(WASI_MATRIX_SCORE, na.rm=T))
-kable(Matrix.sum, col.names = c("Count", "Range", "Mean", "SD"),
+Matrix.sum <- d.matrix %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(Matrix.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "WASI Matrix Reasoning Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.matrix <- ggplot(d.matrix, aes(WASI_MATRIX_SCORE)) +
@@ -271,14 +353,13 @@ Note: Stopped administration after BABS_173. All values fall in allowable range 
 
 ```{r RemoteAssoc, warning=FALSE, message=FALSE}
 d.remoteAssoc <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, REMOTE_ASSOCIATES) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.remoteAssoc$REMOTE_ASSOCIATES <- as.numeric(d.remoteAssoc$REMOTE_ASSOCIATES)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+   mutate_at(vars(starts_with("REMOTE")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-remoteAssoc.sum <- d.remoteAssoc %>% summarise(count = sum(!is.na(REMOTE_ASSOCIATES)),
-         range = range(REMOTE_ASSOCIATES, na.rm = T),                       
-         mean = mean(REMOTE_ASSOCIATES, na.rm=T),
-         SD = sd(REMOTE_ASSOCIATES, na.rm=T))
-kable(remoteAssoc.sum, col.names = c("Count", "Range", "Mean", "SD"),
+remoteAssoc.sum <- d.remoteAssoc %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(remoteAssoc.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Remote Associates Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.remoteAssoc <- ggplot(d.remoteAssoc, aes(REMOTE_ASSOCIATES)) +
@@ -289,19 +370,18 @@ p.remoteAssoc
 ```
 
 ### Alternative Uses Task
-Note: There are only 4 observations of this in the entire battery contained within the sheet.
+Note: There are only 4 observations of this in the entire battery contained within the sheet. 
 
 ```{r AltUse, warning=FALSE, message=FALSE}
 d.altUse <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, ALTERTIVE_USES) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.altUse$ALTERTIVE_USES <- as.numeric(d.altUse$ALTERTIVE_USES)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+   mutate_at(vars(starts_with("ALT")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-altUse.sum <- d.altUse %>% summarise(count = sum(!is.na(ALTERTIVE_USES)),
-         range = range(ALTERTIVE_USES, na.rm = T),                       
-         mean = mean(ALTERTIVE_USES, na.rm=T),
-         SD = sd(ALTERTIVE_USES, na.rm=T))
-kable(altUse.sum, col.names = c("Count", "Range", "Mean", "SD"),
-      caption = "Alternative Uses Task Summary Table") %>% kable_styling()
+altUses.sum <- d.altUse %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(altUses.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Alternative Uses Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.altUse <- ggplot(d.altUse, aes(ALTERTIVE_USES)) +
   geom_bar() + 
@@ -317,14 +397,13 @@ Note: Missing scores for most participants after BABS_200; is this measure still
 ```{r WASI_vocab, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
 d.vocab <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_VOCAB_SCORE) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.vocab$WASI_VOCAB_SCORE <- as.numeric(d.vocab$WASI_VOCAB_SCORE)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+   mutate_at(vars(starts_with("WASI")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-Vocab.sum <- d.vocab %>% summarise(count = sum(!is.na(WASI_VOCAB_SCORE)),
-         range = range(WASI_VOCAB_SCORE, na.rm = T),                       
-         mean = mean(WASI_VOCAB_SCORE, na.rm=T),
-         SD = sd(WASI_VOCAB_SCORE, na.rm=T))
-kable(Vocab.sum, col.names = c("Count", "Range", "Mean", "SD"),
+Vocab.sum <- d.vocab %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(Matrix.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "WASI Vocab Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.vocab <- ggplot(d.vocab, aes(WASI_VOCAB_SCORE)) +
@@ -340,14 +419,13 @@ Note: Stopped administration after BABS_173. Unknown range of acceptable values.
 ```{r CTest, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
 d.cTest <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, CTEST) %>%
-                                          distinct(BABS_ID, .keep_all = T)
-d.cTest$CTEST <- as.numeric(d.cTest$CTEST)
+                                          distinct(BABS_ID, .keep_all = T) %>%
+   mutate_at(vars(starts_with("CTEST")), as.numeric)
 #counting the number of observations and summarizing mean & SD
-cTest.sum <- d.cTest %>% summarise(count = sum(!is.na(CTEST)),
-         range = range(CTEST, na.rm = T),                       
-         mean = mean(CTEST, na.rm=T),
-         SD = sd(CTEST, na.rm=T))
-kable(cTest.sum, col.names = c("Count", "Range", "Mean", "SD"),
+cTest.sum <- d.cTest %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+
+kable(cTest.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "C-Test Summary Table") %>% kable_styling()
 #plotting distribution of scores
 p.cTest <- ggplot(d.cTest, aes(CTEST)) +
@@ -360,15 +438,27 @@ p.cTest
 # Individual Difference Questionnaires {.tabset}
 ## Lifestyle {.tabset}
 ### Lifetime Experiences Questionnaire (LEQ)
+Variable number of responses across items; will need to verify with notes to confirm.
 
 ```{r LEQ, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.LEQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("LEQ")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("LEQ")), as.numeric) %>%
+  mutate(LEQ_YA_total = (LEQ_YA_A + LEQ_YA_B)*1.05 + LEQ_YA_C,
+         LEQ_MA_total = (LEQ_MID_A + LEQ_MID_B)*0.25 + LEQ_MID_D + LEQ_MID_C,
+         LEQ_OA_total = (LEQ_LATE_A*0.4) + LEQ_LATE_C + LEQ_LATE_B,
+         LEQ_total = LEQ_YA_total + LEQ_MA_total + LEQ_OA_total)
+#counting the number of observations and summarizing mean & SD
+LEQ.sum <- d.LEQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION") %>% filter(Variable != "LEQ NOTES")
 
-
-
-
+kable(LEQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "LEQ Summary Table") %>% kable_styling()
 ```
 
 ### BABS Physical Activities Questionnaire
+Note: Unclear to me what this instrument is.
 
 ```{r PhysActivity, warning=FALSE, message=FALSE}
 
@@ -381,51 +471,114 @@ p.cTest
 ### Geriatric Depression Questionnaire (GDS)
 
 ```{r GDS, warning=FALSE, message=FALSE}
+d.GDS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, GDS) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("GDS")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+GDS.sum <- d.GDS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(GDS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "GDS Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.GDS <- ggplot(d.GDS, aes(GDS)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic()
+p.GDS
 ```
 
 ### Mood and Anxiety Symptom Questionnaire (MASQ-30)
 
 ```{r MASQ, warning=FALSE, message=FALSE}
+d.MASQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("MASQ")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("MASQ")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+MASQ.sum <- d.MASQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(MASQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "MASQ Summary Table") %>% kable_styling()
+#creating long data frame
+d.MASQ.long <- d.MASQ %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores**
+p.MASQ <- ggplot(d.MASQ.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "MASQ Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~ Facet)
+p.MASQ
 ```
 
 ### Penn State Worry Questionnaire
 
 ```{r PSWQ, warning=FALSE, message=FALSE}
+d.PSWQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, PSWQ) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("PSWQ")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+PSWQ.sum <- d.PSWQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(PSWQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Penn State Worry Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.PSWQ <- ggplot(d.PSWQ, aes(PSWQ)) +
+  geom_bar() + 
+  labs(title = "Penn State Worry Scores in BABS Sample") +
+  theme_classic()
+p.PSWQ
 ```
 
 ## Sleep {.tabset}
 ### Pittsburgh Sleep Quality Index (PSQI)
 
 ```{r PSQI, warning=FALSE, message=FALSE}
+d.PSQI <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("PSQI")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("PSQI")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+PSQI.sum <- d.PSQI %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(PSQI.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Pittsburgh Sleep Quality Summary Table") %>% kable_styling()
+#creating long data frame
+d.PSQI.long <- d.PSQI %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores**
+p.PSQI <- ggplot(d.PSQI.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "Pittsburgh Sleep Quality Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.PSQI
 ```
 
 ### Berkeley Retrospective Sleep Questionnaire (BRSQ)
+Note: only four observations total in dataset. Unclear whether this has been scored.
 
 ```{r BRSQ, warning=FALSE, message=FALSE}
+d.BRSQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, BRSQ) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("BRSQ")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+BRSQ.sum <- d.BRSQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(BRSQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Berkeley Sleep Summary Table") %>% kable_styling()
+#plotting distribution of scores
+p.BRSQ <- ggplot(d.BRSQ, aes(BRSQ)) +
+  geom_bar() + 
+  labs(title = "BRSQ Scores in BABS Sample") +
+  theme_classic()
+p.BRSQ
 ```
 
 ## Meta-cognition {.tabset}
 ### Multifactorial Memory Questionnaire
+I cannot find anything from this instrument in the excel sheet. Will ask RAs.
 
 ```{r MMQ, warning=FALSE, message=FALSE}
 
@@ -435,75 +588,161 @@ p.cTest
 ```
 
 ### Metamemory Questionnaire for Older Adults
+Note: Different number of observations across scales.
 
 ```{r OA_Metamemory, warning=FALSE, message=FALSE}
+d.Metamem <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("METAMEMORY")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("METAMEMORY")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+Metamem.sum <- d.Metamem %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(Metamem.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "OA Metamemory Summary Table") %>% kable_styling()
+#creating long data frame
+d.Metamem.long <- d.Metamem %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores
+p.metamem <- ggplot(d.Metamem.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "Metamemory Scores in BABS Sample") +
+  theme_classic() + facet_grid(.~ Facet)
+p.metamem
 ```
 
 ### Behavior Rating Inventory of Executive Function-Adult (BRIEF-A)
+Note: Strangely, there are far more total score observations than any of the subscales; investigate further.
 
 ```{r Brief_A, warning=FALSE, message=FALSE}
+d.BRIEF <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BRIEF")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("BRIEF")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+BRIEF.sum <- d.BRIEF %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(BRIEF.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "BRIEF-A Summary Table") %>% kable_styling()
+#creating long data frame
+d.BRIEF.long <- d.BRIEF %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores
+p.BRIEF <- ggplot(d.BRIEF.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "BRIEF-A Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.BRIEF
 ```
 
 ## Motivation {.tabset}
 ### Selection-Optimization-Compensation Questionnaire (SOCQ)
+Note: Almost all values are integers, but some of the entered scores are not; need to inquire further about scoring.
 
 ```{r SOCQ, warning=FALSE, message=FALSE}
+d.SOCQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("SOCQ")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("SOCQ")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+SOCQ.sum <- d.SOCQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(SOCQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Seletion-Optimization-Compensation Summary Table") %>% kable_styling()
+#creating long data frame
+d.BRSQ.long <- d.BRSQ %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, `AGE AT SESSION`))
+#plotting distribution of scores**
+p.GDS <- ggplot(d.GDS, aes(GDS)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic()
+p.GDS
 ```
 
 ### BIS/BAS
+Note: Ranges for fun-seeking and drive scales are not within the permissible values of the instrument. BABS_072 has a BAS_D score of 110; fun-seeking scores for BABS_012 (31) and BABS_073 (24) are also outside of allowable range.
 
 ```{r BISBAS, warning=FALSE, message=FALSE}
+d.BISBAS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BISBAS")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("BISBAS")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+BISBAS.sum <- d.BISBAS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(BISBAS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "BIS-BAS Summary Table") %>% kable_styling()
+#plotting distribution of scores**
+p.GDS <- ggplot(d.GDS, aes(GDS)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic()
+p.GDS
 ```
 
 ### Barratt Impulsiveness Scale (BIS-11)
+Note: I think there are more sub-scales to the BIS? 
 
 ```{r BIS, warning=FALSE, message=FALSE}
+d.BIS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BIS_")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("BIS")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+BIS.sum <- d.BIS %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(BIS.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "BIS Summary Table") %>% kable_styling()
+#plotting distribution of scores**
+p.GDS <- ggplot(d.GDS, aes(GDS)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic()
+p.GDS
 ```
 
 ### Grit Scale
+Note: not clear to me what the distinction between _raw & _score values is, but there's a major discrepancy between the number of observations across these two indices. Allowable range unknown.
 
 ```{r Grit, warning=FALSE, message=FALSE}
+d.Grit <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("GRIT")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("GRIT")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+Grit.sum <- d.Grit %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(Grit.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Grit Summary Table") %>% kable_styling()
+#plotting distribution of scores**
+p.GDS <- ggplot(d.GDS, aes(GDS)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic()
+p.GDS
 ```
 
 ### Zimbardo Time Perspective Scale
+Note: Here, there is also major incongruence between the _raw & other values; would be useful to dig into scoring more.
 
 ```{r ZTPS, warning=FALSE, message=FALSE}
+d.ZTP <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("ZTP")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("ZTP")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+ZTP.sum <- d.ZTP %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(ZTP.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Zimbardo Time Perspective Summary Table") %>% kable_styling()
 ```
 
 ## Misc {.tabset}
 ### UCSF Early Developmental History Form
+Cannot find this in the excel sheet; will inquire with RAs.
 
 ```{r UCSF_Dev, warning=FALSE, message=FALSE}
-
-
 
 
 ```
