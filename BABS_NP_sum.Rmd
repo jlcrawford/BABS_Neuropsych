@@ -490,10 +490,15 @@ kable(LEQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean",
 Note: Unclear to me what this instrument is.
 
 ```{r PhysActivity, warning=FALSE, message=FALSE}
+d.physAct <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("PHYSICAL_ACT")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("PHYSICAL_ACT")), as.numeric)
+#counting the number of observations and summarizing mean & SD
+physAct.sum <- d.physAct %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
 
-
-
-
+kable(physAct.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "Physical Activity Summary Table") %>% kable_styling()
 ```
 
 ## Depressive and Anxious Traits {.tabset}

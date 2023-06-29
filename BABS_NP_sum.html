@@ -11,7 +11,7 @@
 
 <meta name="author" content="JLC" />
 
-<meta name="date" content="2023-06-28" />
+<meta name="date" content="2023-06-29" />
 
 <title>BABS Neuropsych Summary</title>
 
@@ -664,7 +664,7 @@ display: none;
 
 <h1 class="title toc-ignore">BABS Neuropsych Summary</h1>
 <h4 class="author">JLC</h4>
-<h4 class="date">2023-06-28</h4>
+<h4 class="date">2023-06-29</h4>
 
 </div>
 
@@ -4992,6 +4992,2361 @@ LEQ_total
 <div id="babs-physical-activities-questionnaire" class="section level3">
 <h3>BABS Physical Activities Questionnaire</h3>
 <p>Note: Unclear to me what this instrument is.</p>
+<pre class="r"><code>d.physAct &lt;- BABS.NP.sess1 %&gt;% select(BABS_ID, `AGE AT SESSION`, starts_with(&quot;PHYSICAL_ACT&quot;)) %&gt;%
+                                          distinct(BABS_ID, .keep_all = T) %&gt;%
+  mutate_at(vars(starts_with(&quot;PHYSICAL_ACT&quot;)), as.numeric)
+#counting the number of observations and summarizing mean &amp; SD
+physAct.sum &lt;- d.physAct %&gt;% describe() %&gt;% select(-vars) %&gt;% rownames_to_column(var = &quot;Variable&quot;) %&gt;%
+  filter(Variable != &quot;BABS_ID*&quot;) %&gt;% filter(Variable != &quot;AGE AT SESSION&quot;)
+
+kable(physAct.sum, col.names = c(&quot;Variable&quot;,&quot;N&quot;,&quot;Mean&quot;,&quot;SD&quot;,&quot;Median&quot;,&quot;Trimmed Mean&quot;,&quot;Median Abs. Deviation&quot;,&quot;Min&quot;,&quot;Max&quot;,&quot;Range&quot;,&quot;Skew&quot;,&quot;Kurtosis&quot;,&quot;SE&quot;),
+      caption = &quot;Physical Activity Summary Table&quot;) %&gt;% kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<caption>
+Physical Activity Summary Table
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:right;">
+N
+</th>
+<th style="text-align:right;">
+Mean
+</th>
+<th style="text-align:right;">
+SD
+</th>
+<th style="text-align:right;">
+Median
+</th>
+<th style="text-align:right;">
+Trimmed Mean
+</th>
+<th style="text-align:right;">
+Median Abs. Deviation
+</th>
+<th style="text-align:right;">
+Min
+</th>
+<th style="text-align:right;">
+Max
+</th>
+<th style="text-align:right;">
+Range
+</th>
+<th style="text-align:right;">
+Skew
+</th>
+<th style="text-align:right;">
+Kurtosis
+</th>
+<th style="text-align:right;">
+SE
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITY_WALKING_TIMES
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+6.111111
+</td>
+<td style="text-align:right;">
+5.1465697
+</td>
+<td style="text-align:right;">
+5.00
+</td>
+<td style="text-align:right;">
+5.260870
+</td>
+<td style="text-align:right;">
+2.965200
+</td>
+<td style="text-align:right;">
+2.0
+</td>
+<td style="text-align:right;">
+28.0
+</td>
+<td style="text-align:right;">
+26.0
+</td>
+<td style="text-align:right;">
+2.8368848
+</td>
+<td style="text-align:right;">
+9.3003028
+</td>
+<td style="text-align:right;">
+0.9904578
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITY_WALKING_MINUTES
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+40.018518
+</td>
+<td style="text-align:right;">
+25.3629354
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+37.630435
+</td>
+<td style="text-align:right;">
+22.239000
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+120.0
+</td>
+<td style="text-align:right;">
+115.0
+</td>
+<td style="text-align:right;">
+1.1578784
+</td>
+<td style="text-align:right;">
+1.3442719
+</td>
+<td style="text-align:right;">
+4.8810992
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_WALKING_MONTHS
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+11.037037
+</td>
+<td style="text-align:right;">
+2.2271313
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+11.478261
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+8.0
+</td>
+<td style="text-align:right;">
+-1.9758671
+</td>
+<td style="text-align:right;">
+2.4905781
+</td>
+<td style="text-align:right;">
+0.4286116
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_CHORES_TIMES
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+7.136364
+</td>
+<td style="text-align:right;">
+5.2761409
+</td>
+<td style="text-align:right;">
+5.00
+</td>
+<td style="text-align:right;">
+7.055556
+</td>
+<td style="text-align:right;">
+4.447800
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+13.0
+</td>
+<td style="text-align:right;">
+0.3205541
+</td>
+<td style="text-align:right;">
+-1.6948595
+</td>
+<td style="text-align:right;">
+1.1248770
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_CHORES_MINUTES
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+45.454546
+</td>
+<td style="text-align:right;">
+40.5882076
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+37.500000
+</td>
+<td style="text-align:right;">
+22.239000
+</td>
+<td style="text-align:right;">
+10.0
+</td>
+<td style="text-align:right;">
+180.0
+</td>
+<td style="text-align:right;">
+170.0
+</td>
+<td style="text-align:right;">
+1.8524894
+</td>
+<td style="text-align:right;">
+3.1846191
+</td>
+<td style="text-align:right;">
+8.6534349
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_CHORES_MONTHS
+</td>
+<td style="text-align:right;">
+22
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_MOWING_TIMES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_MOWING_MINUTES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+120.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+120.00
+</td>
+<td style="text-align:right;">
+120.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+120.0
+</td>
+<td style="text-align:right;">
+120.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_MOWING_MONTHS
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3.500000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3.50
+</td>
+<td style="text-align:right;">
+3.500000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+3.5
+</td>
+<td style="text-align:right;">
+3.5
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_RAKING_TIMES
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+3.000000
+</td>
+<td style="text-align:right;">
+2.3904572
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+3.000000
+</td>
+<td style="text-align:right;">
+1.482600
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+7.0
+</td>
+<td style="text-align:right;">
+6.0
+</td>
+<td style="text-align:right;">
+0.6039640
+</td>
+<td style="text-align:right;">
+-1.5146875
+</td>
+<td style="text-align:right;">
+0.8451543
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_RAKING_MINUTES
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+91.000000
+</td>
+<td style="text-align:right;">
+62.5482671
+</td>
+<td style="text-align:right;">
+120.00
+</td>
+<td style="text-align:right;">
+91.000000
+</td>
+<td style="text-align:right;">
+44.478000
+</td>
+<td style="text-align:right;">
+3.0
+</td>
+<td style="text-align:right;">
+180.0
+</td>
+<td style="text-align:right;">
+177.0
+</td>
+<td style="text-align:right;">
+-0.2782893
+</td>
+<td style="text-align:right;">
+-1.5204701
+</td>
+<td style="text-align:right;">
+22.1141519
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_RAKING_MONTHS
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+6.125000
+</td>
+<td style="text-align:right;">
+4.1896983
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+6.125000
+</td>
+<td style="text-align:right;">
+5.189100
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+11.0
+</td>
+<td style="text-align:right;">
+0.2904823
+</td>
+<td style="text-align:right;">
+-1.5971630
+</td>
+<td style="text-align:right;">
+1.4812820
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GARDENING_TIMES
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+5.000000
+</td>
+<td style="text-align:right;">
+4.4534631
+</td>
+<td style="text-align:right;">
+4.00
+</td>
+<td style="text-align:right;">
+4.545454
+</td>
+<td style="text-align:right;">
+4.447800
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+13.0
+</td>
+<td style="text-align:right;">
+1.0764195
+</td>
+<td style="text-align:right;">
+-0.2548223
+</td>
+<td style="text-align:right;">
+1.2351684
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GARDENING_MINUTES
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+66.923077
+</td>
+<td style="text-align:right;">
+67.0055489
+</td>
+<td style="text-align:right;">
+60.00
+</td>
+<td style="text-align:right;">
+56.363636
+</td>
+<td style="text-align:right;">
+44.478000
+</td>
+<td style="text-align:right;">
+10.0
+</td>
+<td style="text-align:right;">
+240.0
+</td>
+<td style="text-align:right;">
+230.0
+</td>
+<td style="text-align:right;">
+1.5698993
+</td>
+<td style="text-align:right;">
+1.1351586
+</td>
+<td style="text-align:right;">
+18.5839956
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GARDENING_MONTHS
+</td>
+<td style="text-align:right;">
+13
+</td>
+<td style="text-align:right;">
+7.538462
+</td>
+<td style="text-align:right;">
+3.0170456
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+7.545454
+</td>
+<td style="text-align:right;">
+1.482600
+</td>
+<td style="text-align:right;">
+3.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+9.0
+</td>
+<td style="text-align:right;">
+0.3935966
+</td>
+<td style="text-align:right;">
+-1.3704721
+</td>
+<td style="text-align:right;">
+0.8367779
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_HIKING_TIMES
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+1.333333
+</td>
+<td style="text-align:right;">
+0.5773503
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.333333
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+2.0
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+0.3849002
+</td>
+<td style="text-align:right;">
+-2.3333333
+</td>
+<td style="text-align:right;">
+0.3333333
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_HIKING_MINUTES
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+110.000000
+</td>
+<td style="text-align:right;">
+75.4983444
+</td>
+<td style="text-align:right;">
+120.00
+</td>
+<td style="text-align:right;">
+110.000000
+</td>
+<td style="text-align:right;">
+88.956000
+</td>
+<td style="text-align:right;">
+30.0
+</td>
+<td style="text-align:right;">
+180.0
+</td>
+<td style="text-align:right;">
+150.0
+</td>
+<td style="text-align:right;">
+-0.1301295
+</td>
+<td style="text-align:right;">
+-2.3333333
+</td>
+<td style="text-align:right;">
+43.5889894
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_HIKING_MONTHS
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_JOGGING_TIMES
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_JOGGING_MINUTES
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_JOGGING_MONTHS
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BIKING_TIMES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BIKING_MINUTES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+90.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+90.00
+</td>
+<td style="text-align:right;">
+90.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+90.0
+</td>
+<td style="text-align:right;">
+90.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BIKING_MONTHS
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+6.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+6.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+6.0
+</td>
+<td style="text-align:right;">
+6.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_STATIONARY_BIKE_TIMES
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+3.857143
+</td>
+<td style="text-align:right;">
+4.1403934
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+3.857143
+</td>
+<td style="text-align:right;">
+1.482600
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+11.0
+</td>
+<td style="text-align:right;">
+1.0166144
+</td>
+<td style="text-align:right;">
+-0.7332483
+</td>
+<td style="text-align:right;">
+1.5649216
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_STATIONARY_BIKE_MINUTES
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+27.142857
+</td>
+<td style="text-align:right;">
+15.7736972
+</td>
+<td style="text-align:right;">
+20.00
+</td>
+<td style="text-align:right;">
+27.142857
+</td>
+<td style="text-align:right;">
+7.413000
+</td>
+<td style="text-align:right;">
+15.0
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+45.0
+</td>
+<td style="text-align:right;">
+1.1360145
+</td>
+<td style="text-align:right;">
+-0.1977402
+</td>
+<td style="text-align:right;">
+5.9618972
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_STATIONARY_BIKE_MONTHS
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+9.285714
+</td>
+<td style="text-align:right;">
+3.5923199
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+9.285714
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+8.0
+</td>
+<td style="text-align:right;">
+-0.4577127
+</td>
+<td style="text-align:right;">
+-1.8524116
+</td>
+<td style="text-align:right;">
+1.3577693
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_DANCING_TIMES
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+4.142857
+</td>
+<td style="text-align:right;">
+4.7409061
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+4.142857
+</td>
+<td style="text-align:right;">
+1.482600
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+13.0
+</td>
+<td style="text-align:right;">
+1.1545525
+</td>
+<td style="text-align:right;">
+-0.2382133
+</td>
+<td style="text-align:right;">
+1.7918941
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_DANCING_MINUTES
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+27.142857
+</td>
+<td style="text-align:right;">
+19.5484745
+</td>
+<td style="text-align:right;">
+20.00
+</td>
+<td style="text-align:right;">
+27.142857
+</td>
+<td style="text-align:right;">
+7.413000
+</td>
+<td style="text-align:right;">
+10.0
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+50.0
+</td>
+<td style="text-align:right;">
+0.7279546
+</td>
+<td style="text-align:right;">
+-1.4606979
+</td>
+<td style="text-align:right;">
+7.3886289
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_DANCING_MONTHS
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+9.428571
+</td>
+<td style="text-align:right;">
+3.2071349
+</td>
+<td style="text-align:right;">
+10.00
+</td>
+<td style="text-align:right;">
+9.428571
+</td>
+<td style="text-align:right;">
+2.965200
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+8.0
+</td>
+<td style="text-align:right;">
+-0.6448208
+</td>
+<td style="text-align:right;">
+-1.4633409
+</td>
+<td style="text-align:right;">
+1.2121831
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_AEROBICS_TIMES
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+2.750000
+</td>
+<td style="text-align:right;">
+2.2173558
+</td>
+<td style="text-align:right;">
+2.00
+</td>
+<td style="text-align:right;">
+2.750000
+</td>
+<td style="text-align:right;">
+0.741300
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+6.0
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+0.6449505
+</td>
+<td style="text-align:right;">
+-1.7426566
+</td>
+<td style="text-align:right;">
+1.1086779
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_AEROBICS_MINUTES
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+35.000000
+</td>
+<td style="text-align:right;">
+21.2132034
+</td>
+<td style="text-align:right;">
+32.50
+</td>
+<td style="text-align:right;">
+35.000000
+</td>
+<td style="text-align:right;">
+22.239000
+</td>
+<td style="text-align:right;">
+15.0
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+45.0
+</td>
+<td style="text-align:right;">
+0.1374930
+</td>
+<td style="text-align:right;">
+-2.2453704
+</td>
+<td style="text-align:right;">
+10.6066017
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_AEROBICS_MONTHS
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+7.750000
+</td>
+<td style="text-align:right;">
+4.9244289
+</td>
+<td style="text-align:right;">
+8.00
+</td>
+<td style="text-align:right;">
+7.750000
+</td>
+<td style="text-align:right;">
+5.930400
+</td>
+<td style="text-align:right;">
+3.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+9.0
+</td>
+<td style="text-align:right;">
+-0.0133460
+</td>
+<td style="text-align:right;">
+-2.4221158
+</td>
+<td style="text-align:right;">
+2.4622145
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BOWLING_TIMES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BOWLING_MINUTES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+60.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+60.00
+</td>
+<td style="text-align:right;">
+60.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_BOWLING_MONTHS
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+3.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+3.00
+</td>
+<td style="text-align:right;">
+3.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+3.0
+</td>
+<td style="text-align:right;">
+3.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GOLF_TIMES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+4.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+4.00
+</td>
+<td style="text-align:right;">
+4.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+4.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GOLF_MINUTES
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+270.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+270.00
+</td>
+<td style="text-align:right;">
+270.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+270.0
+</td>
+<td style="text-align:right;">
+270.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GOLF_MONTHS
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GENERAL_EXCERSIZE_TIMES
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+9.875000
+</td>
+<td style="text-align:right;">
+4.4860896
+</td>
+<td style="text-align:right;">
+11.00
+</td>
+<td style="text-align:right;">
+9.875000
+</td>
+<td style="text-align:right;">
+4.447800
+</td>
+<td style="text-align:right;">
+2.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+-0.4848061
+</td>
+<td style="text-align:right;">
+-1.4479880
+</td>
+<td style="text-align:right;">
+1.5860722
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GENERAL_EXCERSIZE_MINUTES
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+42.500000
+</td>
+<td style="text-align:right;">
+34.6410162
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+42.500000
+</td>
+<td style="text-align:right;">
+3.706500
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+120.0
+</td>
+<td style="text-align:right;">
+115.0
+</td>
+<td style="text-align:right;">
+1.2325075
+</td>
+<td style="text-align:right;">
+0.3200684
+</td>
+<td style="text-align:right;">
+12.2474487
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_GENERAL_EXCERSIZE_MONTHS
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_SWIMMING_TIMES
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+7.333333
+</td>
+<td style="text-align:right;">
+6.1101009
+</td>
+<td style="text-align:right;">
+6.00
+</td>
+<td style="text-align:right;">
+7.333333
+</td>
+<td style="text-align:right;">
+5.930400
+</td>
+<td style="text-align:right;">
+2.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.2078266
+</td>
+<td style="text-align:right;">
+-2.3333333
+</td>
+<td style="text-align:right;">
+3.5276684
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_SWIMMING_MINUTES
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+36.666667
+</td>
+<td style="text-align:right;">
+20.8166600
+</td>
+<td style="text-align:right;">
+30.00
+</td>
+<td style="text-align:right;">
+36.666667
+</td>
+<td style="text-align:right;">
+14.826000
+</td>
+<td style="text-align:right;">
+20.0
+</td>
+<td style="text-align:right;">
+60.0
+</td>
+<td style="text-align:right;">
+40.0
+</td>
+<td style="text-align:right;">
+0.2874095
+</td>
+<td style="text-align:right;">
+-2.3333333
+</td>
+<td style="text-align:right;">
+12.0185043
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_SWIMMING_MONTHS
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.000000
+</td>
+<td style="text-align:right;">
+0.000000
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_OTHER_TEXT
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_OTHER_TIMES
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+4.770833
+</td>
+<td style="text-align:right;">
+4.3945451
+</td>
+<td style="text-align:right;">
+3.50
+</td>
+<td style="text-align:right;">
+4.225000
+</td>
+<td style="text-align:right;">
+2.779875
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+14.0
+</td>
+<td style="text-align:right;">
+13.0
+</td>
+<td style="text-align:right;">
+0.9529133
+</td>
+<td style="text-align:right;">
+-0.7219357
+</td>
+<td style="text-align:right;">
+1.2685959
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_OTHER_MINUTES
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+56.666667
+</td>
+<td style="text-align:right;">
+49.0979232
+</td>
+<td style="text-align:right;">
+50.00
+</td>
+<td style="text-align:right;">
+52.500000
+</td>
+<td style="text-align:right;">
+55.597500
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+150.0
+</td>
+<td style="text-align:right;">
+145.0
+</td>
+<td style="text-align:right;">
+0.6224955
+</td>
+<td style="text-align:right;">
+-1.1605337
+</td>
+<td style="text-align:right;">
+14.1733496
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_OTHER_MONTHS
+</td>
+<td style="text-align:right;">
+12
+</td>
+<td style="text-align:right;">
+7.083333
+</td>
+<td style="text-align:right;">
+5.2476546
+</td>
+<td style="text-align:right;">
+8.50
+</td>
+<td style="text-align:right;">
+7.200000
+</td>
+<td style="text-align:right;">
+5.189100
+</td>
+<td style="text-align:right;">
+1.0
+</td>
+<td style="text-align:right;">
+12.0
+</td>
+<td style="text-align:right;">
+11.0
+</td>
+<td style="text-align:right;">
+-0.0984574
+</td>
+<td style="text-align:right;">
+-2.0572227
+</td>
+<td style="text-align:right;">
+1.5148674
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_MILES_WALKED
+</td>
+<td style="text-align:right;">
+8
+</td>
+<td style="text-align:right;">
+16.250000
+</td>
+<td style="text-align:right;">
+6.1586177
+</td>
+<td style="text-align:right;">
+15.00
+</td>
+<td style="text-align:right;">
+16.250000
+</td>
+<td style="text-align:right;">
+7.413000
+</td>
+<td style="text-align:right;">
+10.0
+</td>
+<td style="text-align:right;">
+28.0
+</td>
+<td style="text-align:right;">
+18.0
+</td>
+<td style="text-align:right;">
+0.6200833
+</td>
+<td style="text-align:right;">
+-1.0154292
+</td>
+<td style="text-align:right;">
+2.1774002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_PACE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_STAIRS
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+36.000000
+</td>
+<td style="text-align:right;">
+35.0406358
+</td>
+<td style="text-align:right;">
+25.00
+</td>
+<td style="text-align:right;">
+31.608696
+</td>
+<td style="text-align:right;">
+25.204200
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+140.0
+</td>
+<td style="text-align:right;">
+140.0
+</td>
+<td style="text-align:right;">
+1.3627633
+</td>
+<td style="text-align:right;">
+1.1331370
+</td>
+<td style="text-align:right;">
+6.7435735
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_SEDENTARY_TIME
+</td>
+<td style="text-align:right;">
+27
+</td>
+<td style="text-align:right;">
+13.185185
+</td>
+<td style="text-align:right;">
+4.0647361
+</td>
+<td style="text-align:right;">
+12.00
+</td>
+<td style="text-align:right;">
+12.978261
+</td>
+<td style="text-align:right;">
+2.965200
+</td>
+<td style="text-align:right;">
+5.0
+</td>
+<td style="text-align:right;">
+22.5
+</td>
+<td style="text-align:right;">
+17.5
+</td>
+<td style="text-align:right;">
+0.6027400
+</td>
+<td style="text-align:right;">
+-0.1882087
+</td>
+<td style="text-align:right;">
+0.7822588
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_ACTIVITY_CHANGE
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITIES_NOTES
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NaN
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+-Inf
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+<td style="text-align:right;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+PHYSICAL_ACTIVITY_MINUTES
+</td>
+<td style="text-align:right;">
+200
+</td>
+<td style="text-align:right;">
+210.822454
+</td>
+<td style="text-align:right;">
+148.1099985
+</td>
+<td style="text-align:right;">
+192.45
+</td>
+<td style="text-align:right;">
+194.526646
+</td>
+<td style="text-align:right;">
+138.808425
+</td>
+<td style="text-align:right;">
+0.0
+</td>
+<td style="text-align:right;">
+975.0
+</td>
+<td style="text-align:right;">
+975.0
+</td>
+<td style="text-align:right;">
+1.3730519
+</td>
+<td style="text-align:right;">
+3.4106745
+</td>
+<td style="text-align:right;">
+10.4729584
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="depressive-and-anxious-traits" class="section level2 tabset">
