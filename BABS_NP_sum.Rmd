@@ -12,7 +12,7 @@ output:
 rm(list=ls())
 
 # Packages
-library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl); library(psych); library(tidyverse)
+library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl); library(psych); library(ds4psy); library(tidyverse)
 
 #Create data directories
 NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
@@ -503,6 +503,7 @@ kable(physAct.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Me
 
 ## Depressive and Anxious Traits {.tabset}
 ### Geriatric Depression Questionnaire (GDS)
+Allowable range is 0-30 (integers only). The following participants have scores that are not integers: BABS106 (10.5), BABS111 (0.5), BABS114 (3.5), BABS118 (7.5).
 
 ```{r GDS, warning=FALSE, message=FALSE}
 d.GDS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, GDS) %>%
@@ -523,6 +524,7 @@ p.GDS
 ```
 
 ### Mood and Anxiety Symptom Questionnaire (MASQ-30)
+Subscores range from 10-50 (integers only). The following participants have scores that are not integers: BABS070 (MASQ_GD = 13.5, MASQ_AD = 26.5), BABS072 (MASQ_GD = 16.5), BABS111 (MASQ_AA = 14.5).
 
 ```{r MASQ, warning=FALSE, message=FALSE}
 d.MASQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("MASQ")) %>%
@@ -546,6 +548,7 @@ p.MASQ
 ```
 
 ### Penn State Worry Questionnaire
+Scores range from 16-80 (integers only). The following participants have scores that are not integers: BABS029 (50.13), BABS038 (21.9375), BABS041(39.31), BABS045 (55.47), BABS083 (29.87), BABS092 (45.87).
 
 ```{r PSWQ, warning=FALSE, message=FALSE}
 d.PSWQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, PSWQ) %>%
@@ -567,6 +570,7 @@ p.PSWQ
 
 ## Sleep {.tabset}
 ### Pittsburgh Sleep Quality Index (PSQI)
+BABS284 (PSQI_DISTB = 12; range=0-3). Integer values only acceptable; BABS057 (PSQI_SLPQUAL = 1.5), BABS159 (PSQI_SLPQUAL = 1.5).
 
 ```{r PSQI, warning=FALSE, message=FALSE}
 d.PSQI <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("PSQI")) %>%
@@ -590,7 +594,7 @@ p.PSQI
 ```
 
 ### Berkeley Retrospective Sleep Questionnaire (BRSQ)
-Note: only four observations total in dataset. Unclear whether this has been scored.
+This instrument has not been scored.
 
 ```{r BRSQ, warning=FALSE, message=FALSE}
 d.BRSQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, BRSQ) %>%
@@ -611,16 +615,6 @@ p.BRSQ
 ```
 
 ## Meta-cognition {.tabset}
-### Multifactorial Memory Questionnaire
-I cannot find anything from this instrument in the excel sheet. Will ask RAs.
-
-```{r MMQ, warning=FALSE, message=FALSE}
-
-
-
-
-```
-
 ### Metamemory Questionnaire for Older Adults
 Note: Different number of observations across scales.
 
@@ -671,7 +665,7 @@ p.BRIEF
 
 ## Motivation {.tabset}
 ### Selection-Optimization-Compensation Questionnaire (SOCQ)
-Note: Almost all values are integers, but some of the entered scores are not; need to inquire further about scoring.
+Scores should be integers only (each subscale ranges from 0-12; total= 0-48). There are many instances of non-integr values, so printing a data frame with the incorrect values & subject IDs below.
 
 ```{r SOCQ, warning=FALSE, message=FALSE}
 d.SOCQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("SOCQ")) %>%
@@ -692,6 +686,11 @@ p.SOCQ <- ggplot(d.SOCQ.long, aes(Score)) +
   labs(title = "SOC Questionnaire Scores in BABS Sample") +
   theme_classic() + facet_wrap(.~ Facet)
 p.SOCQ
+
+#flagging values that are incorrect, given the constraints of the scale
+flag.socq <- d.SOCQ.long %>% mutate(integ_test = is_wholenumber(d.SOCQ.long$Score)) %>%
+  filter(integ_test == FALSE)
+kable(flag.socq, caption = "Incorrectly entered values for the SOCQ") %>% kable_styling()
 ```
 
 ### BIS/BAS
@@ -743,7 +742,9 @@ p.BIS
 ```
 
 ### Grit Scale
-Note: not clear to me what the distinction between _raw & _score values is, but there's a major discrepancy between the number of observations across these two indices. Allowable range unknown.
+Note: Range of "GRIT_SCORE" can only range from 1 to 5; it appears that in instances when there was no observed "GRIT_RAW" score, a score of 0 was entered for "GRIT_SCORE"; should double-check that the following participants do not have any Grit scores and then remove 0s from data frame for "GRIT_SCORE"
+
+The following participants have a "GRIT_SCORE" == 0: "BABS118" "BABS120" "BABS121" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192"
 
 ```{r Grit, warning=FALSE, message=FALSE}
 d.Grit <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("GRIT")) %>%
@@ -767,7 +768,9 @@ p.Grit
 ```
 
 ### Zimbardo Time Perspective Scale
-Note: Here, there is also major incongruence between the _raw & other values; would be useful to dig into scoring more.
+Note: It appears that in instances when there was no observed "_RAW" score, a score of 0 was entered for "_SCORE"; should double-check that the following participants do not have any raw scores and then remove 0s from data frame for "_SCORE" variables
+
+The following participants have a "_SCORE" == 0: "BABS010" "BABS082" "BABS107" "BABS120" "BABS121" "BABS124" "BABS127" "BABS153" "BABS163" "BABS165" "BABS167" "BABS168" "BABS169" "BABS170" "BABS172" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192"
 
 ```{r ZTPS, warning=FALSE, message=FALSE}
 d.ZTP <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("ZTP")) %>%
@@ -783,7 +786,7 @@ kable(ZTP.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean",
 
 ## Misc {.tabset}
 ### UCSF Early Developmental History Form
-Cannot find this in the excel sheet; will inquire with RAs.
+Unscored.
 
 ```{r UCSF_Dev, warning=FALSE, message=FALSE}
 
