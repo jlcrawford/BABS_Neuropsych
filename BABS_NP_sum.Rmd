@@ -186,7 +186,7 @@ fig.Nback
 
 ## Inhibition {.tabset}
 ### Stroop (Paper version)
-Note: Verify that this is only part of the later battery (i.e., only later Ss have these values). Inconsistent number of participants across conditions.
+Note: Inconsistent number of participants across conditions.
 
 ```{r Stroop_paper, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -280,7 +280,7 @@ p.DCCS
 ```
 
 ### Cognitive Reflection Test
-Note: Should look up range to see if negative values are within the acceptable range of values; BABS_031 is the only negative score (-3)
+Note: Scores can only range from 0-3; BABS_031 has a score of -3.
 
 ```{r CogReflect, warning=FALSE, message=FALSE}
 d.CRT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CRT")) %>%
@@ -332,6 +332,7 @@ kable(FME.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean",
 
 ## Visuospatial {.tabset}
 ### Visual Reproduction
+Note: Scores for each sub-scale range from 0-104. BABS055 has a VR2 score = 119; verify actual score.
 
 ```{r VisRepro, warning=FALSE, message=FALSE}
 d.WMS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("WMS")) %>%
@@ -356,7 +357,7 @@ p.WMS
 
 ## Fluid Intelligence {.tabset}
 ### WASI-II Matrix Reasoning
-Note: Missing scores for most participants after BABS_200; is this measure still being collected? Also, need to look up the range of acceptable scores to verify values.
+Note: Also, need to look up the range of acceptable scores to verify values.
 
 ```{r MatrixReason, warning=FALSE, message=FALSE}
 d.matrix <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_MATRIX_SCORE) %>%
@@ -399,7 +400,7 @@ p.remoteAssoc
 ```
 
 ### Alternative Uses Task
-Note: There are only 4 observations of this in the entire battery contained within the sheet. 
+Note: Unscored measure.
 
 ```{r AltUse, warning=FALSE, message=FALSE}
 d.altUse <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, ALTERTIVE_USES) %>%
@@ -421,7 +422,7 @@ p.altUse
 
 ## Crystalized Intelligence {.tabset}
 ### WASI-II Vocab
-Note: Missing scores for most participants after BABS_200; is this measure still being collected? Also, need to look up the range of acceptable scores to verify values.
+Note: need to look up the range of acceptable scores to verify values.
 
 ```{r WASI_vocab, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -616,7 +617,10 @@ p.BRSQ
 
 ## Meta-cognition {.tabset}
 ### Metamemory Questionnaire for Older Adults
-Note: Different number of observations across scales.
+Note: Scores should be integers only (General range: 18-90; Ability range: 20-100; Strategy range: 19-95). Table printed below with values not entered as integers.
+
+Following scores are out of range (_GENERAL): BABS112, BABS134, BABS151, BABS132, BABS133, BABS152
+Following scores are out of range (_STRATEGIES): BABS152
 
 ```{r OA_Metamemory, warning=FALSE, message=FALSE}
 d.Metamem <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("METAMEMORY")) %>%
@@ -637,10 +641,21 @@ p.metamem <- ggplot(d.Metamem.long, aes(Score)) +
   labs(title = "Metamemory Scores in BABS Sample") +
   theme_classic() + facet_grid(.~ Facet)
 p.metamem
+
+#flagging non-integer values
+flag.metamem <- d.Metamem.long %>% mutate(integ_test = is_wholenumber(d.Metamem.long$Score)) %>%
+     filter(integ_test == FALSE)
+kable(flag.metamem, caption = "Incorrectly entered (non-integer) values for the Metamemory Questionnaire") %>% kable_styling()
 ```
 
 ### Behavior Rating Inventory of Executive Function-Adult (BRIEF-A)
-Note: Strangely, there are far more total score observations than any of the subscales; investigate further.
+Note: Scores should be integers only (Total range : 32-224; WM range: 8-56; Initiate range: 8-56; PO range: 10-70; TM range: 6-42). The following values were entered as non-integers: BABS007 (BRIEF_WM = 14.5, BRIEF_TOTAL = 46.5); BABS014 (BRIEF_PO = 20.5, BRIEF_TOTAL = 77.5), BABS171 (BRIEF_TM = 9.5, BRIEF_TOTAL = 42.5). 
+
+Following scores are out of range: BABS284(0s are not an acceptable value; multiple subscales), BABS260 (BRIEF_WM = 72, BRIEF_PO = 71, BRIEF_TM = 57, BRIEF_TOTAL = 36), BABS264 (BRIEF_WM = 65, BRIEF_PO = 77, BRIEF_TM = 75, BRIEF_TOTAL = 28), BABS199 (BRIEF_WM = 62, BRIEF_PO = 73, BRIEF_TM = 75, BRIEF_TOTAL = 28).
+
+It appears that in instances when there were no observed rawscore, a scores of 0 was entered for "_TOTAL"; should double-check that the following participants do not have any raw scores and then remove 0s from data frame for "_TOTAL"
+
+The following participants have a "BRIEF_TOTAL" == 0:  "BABS010" "BABS022" "BABS070" "BABS107" "BABS120" "BABS165" "BABS168" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192" "BABS193" "BABS194" "BABS195" "BABS196" "BABS197" "BABS198" "BABS200"
 
 ```{r Brief_A, warning=FALSE, message=FALSE}
 d.BRIEF <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BRIEF")) %>%
@@ -665,7 +680,7 @@ p.BRIEF
 
 ## Motivation {.tabset}
 ### Selection-Optimization-Compensation Questionnaire (SOCQ)
-Scores should be integers only (each subscale ranges from 0-12; total= 0-48). There are many instances of non-integr values, so printing a data frame with the incorrect values & subject IDs below.
+Scores should be integers only (each subscale ranges from 0-12; total= 0-48). There are many instances of non-integer values, so printing a data frame with the incorrect values & subject IDs below.
 
 ```{r SOCQ, warning=FALSE, message=FALSE}
 d.SOCQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("SOCQ")) %>%
@@ -718,7 +733,7 @@ p.BISBAS
 ```
 
 ### Barratt Impulsiveness Scale (BIS-11)
-Note: I think there are more sub-scales to the BIS? 
+Note: Missing the scoring of the first-order BIS scales.
 
 ```{r BIS, warning=FALSE, message=FALSE}
 d.BIS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BIS_")) %>%
