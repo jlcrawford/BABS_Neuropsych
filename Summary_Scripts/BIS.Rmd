@@ -56,6 +56,9 @@ BIS.clean <- BIS %>% pivot_longer(names_to = "facet", values_to = "response", -c
                           "4" = 1)),
          Subscale = gsub("[[:digit:]]", "", Subscale)) %>%
   select(BABS_ID, BIS_Session, Scale, Subscale, Value)
+
+#If you would like to create a summary using only a unique subset of participant IDs that you have supplied (in previous code chunk), you can simply add the following line of code to filter the raw data to the code above
+# %>% filter(BABS_ID %in% sub.IDs)
 ```
 
 ## Counting the number of missing responses & imputing missing data
