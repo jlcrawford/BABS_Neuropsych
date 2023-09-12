@@ -10,7 +10,7 @@ output: "html_document"
 ```{r setup, warning=FALSE, message=FALSE}
 rm(list=ls())
 #Import relevant packages
-library(kableExtra); library(tidyverse)
+library(kableExtra); library(psych); library(tidyverse)
 
 # Import data (will update path to Shared Drive once data entry is complete)
 BISBAS.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBAS.csv"
@@ -24,22 +24,7 @@ BISBAS.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBA
 ```{r Sub_IDs, warning=FALSE, message=FALSE}
 # Enter all participants that you would like to summarize here)
 ## This section can be commented out if you want to run all available participants
-sub.IDs<- c("BABS005", "BABS006","BABS008", "BABS024", "BABS004", "BABS007", "BABS009", "BABS010", "BABS011", "BABS012",
-            "BABS013", "BABS014", "BABS015", "BABS016", "BABS017", "BABS019", "BABS020", "BABS021", "BABS022", "BABS023",
-            "BABS025","BABS026","BABS028","BABS029","BABS030","BABS031","BABS033","BABS035","BABS036","BABS037","BABS038",
-            "BABS040", "BABS042", "BABS043", "BABS044", "BABS045", "BABS046", "BABS049", "BABS051", "BABS053", "BABS055",
-            "BABS056", "BABS057", "BABS058", "BABS059", "BABS060", "BABS061", "BABS062", "BABS066", "BABS067", "BABS069",
-            "BABS070", "BABS071", "BABS072", "BABS073", "BABS074", "BABS075", "BABS076", "BABS077", "BABS079", "BABS080",
-            "BABS081", "BABS082", "BABS083", "BABS084", "BABS085", "BABS086", "BABS087", "BABS088", "BABS089", "BABS090",
-            "BABS091", "BABS092", "BABS093", "BABS094", "BABS095", "BABS096", "BABS097", "BABS098", "BABS099", "BABS100",
-            "BABS101", "BABS102", "BABS104", "BABS105", "BABS106", "BABS107", "BABS108", "BABS110", "BABS111", "BABS112",
-            "BABS113", "BABS114", "BABS115", "BABS116", "BABS117", "BABS118", "BABS119", "BABS121", "BABS122", "BABS124",
-            "BABS125", "BABS126", "BABS128", "BABS129", "BABS130", "BABS131", "BABS132", "BABS133", "BABS134", "BABS135",
-            "BABS136", "BABS138", "BABS139", "BABS141", "BABS142", "BABS143", "BABS145", "BABS146", "BABS147", "BABS148",
-            "BABS150", "BABS151", "BABS152", "BABS154", "BABS155", "BABS157","BABS158", "BABS159", "BABS160", "BABS161",
-            "BABS162", "BABS163", "BABS166", "BABS168", "BABS169", "BABS170", "BABS171", "BABS172", "BABS173", "BABS174",
-            "BABS175", "BABS176", "BABS177", "BABS179", "BABS180", "BABS181", "BABS196", "BABS266", "BABS272", "BABS279",
-            "BABS284")
+sub.IDs<- c("BABS005", "BABS006","BABS008", "BABS024", "BABS004", "BABS007", "BABS009", "BABS010", "BABS011", "BABS012")
 ```
 
 ## Cleaning data frame for summary
@@ -61,6 +46,7 @@ BISBAS.clean <- BISBAS %>% pivot_longer(names_to = "facet", values_to = "respons
 
 ## Counting the number of missing responses & imputing missing data
 ### Participants missing > 20% of their data for a given scale will be removed (threshold can be edited for your own purposes)
+### Printed below are all participants with missing values ≤ 20%, on which imputation was carried out
 
 ```{r BISBAS_impute, warning=FALSE, message=FALSE}
 #creating data frame that summarizes the amount of missing data per (sub)scale for each participant
@@ -71,8 +57,9 @@ BISBAS.missing.sum <- BISBAS.clean %>% group_by(BABS_ID, BISBAS_Session, Scale) 
          prop.missing = count.missing/total,
          flag.missing = if_else(prop.missing > 0.2, 1, 0)) %>%
   filter(flag.missing == 0)
+BISBAS.missing.sum.tbl <- BISBAS.missing.sum %>% filter(prop.missing != 0)
 #printing table with the missing data summary
-kable(BISBAS.missing.sum) %>% kable_styling()
+kable(BISBAS.missing.sum.tbl) %>% kable_styling()
 #creating data frame with *only* participants who have accectable amounts of missing data (i.e., < 20% missing)
 BISBAS.clean.IDs <- BISBAS.missing.sum %>% ungroup() %>% select(BABS_ID, BISBAS_Session) %>% group_by(BABS_ID, BISBAS_Session) %>% distinct()
 #New data frame with imputed data (using median of the subscale values)
@@ -91,4 +78,24 @@ BISBAS.sum <- BISBAS.clean.imputed %>% group_by(BABS_ID, BISBAS_Session, Scale) 
   pivot_wider(id_cols = c("BABS_ID", "BISBAS_Session"), names_from = "Scale", values_from = "Score")
 #to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
 #write.csv(BISBAS.sum, file = BISBAS.output.path, row.names = F)
+```
+
+### Descriptive summary of BISBAS responses (imputed sample)
+
+```{r BISBAS_desc_sum, warning=FALSE, message=FALSE}
+#counting the number of observations and summarizing mean & SD
+BISBAS.desc.sum <- BISBAS.sum %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "BISBAS_Session")
+
+kable(BISBAS.desc.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "BISBAS Summary Table") %>% kable_styling()
+#creating long data frame
+d.BISBAS.long <- BISBAS.sum %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, BISBAS_Session))
+#plotting distribution of scores
+p.BISBAS <- ggplot(d.BISBAS.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "BISBAS Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.BISBAS
 ```

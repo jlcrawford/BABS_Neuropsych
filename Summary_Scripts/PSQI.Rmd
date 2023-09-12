@@ -10,7 +10,7 @@ output: "html_document"
 ```{r setup, warning=FALSE, message=FALSE}
 rm(list=ls())
 #Import relevant packages
-library(kableExtra); library(tabledown); library(tidyverse)
+library(kableExtra); library(psych); library(tabledown); library(tidyverse)
 
 # Import data (will update path to Shared Drive once data entry is complete)
 PSQI.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSQI.csv"
@@ -73,4 +73,24 @@ PSQI.sum <- PSQI.sleep.int %>%
   select(BABS_ID, PSQI_Session, PSQI, PSQIDURAT, PSQIDISTB, PSQILATEN, PSQIDAYDYS, PSQIHSE, PSQISLPQUAL, PSQIMEDS)
 #to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
 #write.csv(PSQI.sum, file = PSQI.output.path, row.names = F)
+```
+
+### Descriptive summary of PSQI responses
+
+```{r PSQI_desc_sum, warning=FALSE, message=FALSE}
+#counting the number of observations and summarizing mean & SD
+PSQI.desc.sum <- PSQI.sum %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "PSQI_Session")
+
+kable(PSQI.desc.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "PSQI Summary Table") %>% kable_styling()
+#creating long data frame
+d.PSQI.long <- PSQI.sum %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, PSQI_Session))
+#plotting distribution of scores
+p.PSQI <- ggplot(d.PSQI.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "PSQI Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.PSQI
 ```
