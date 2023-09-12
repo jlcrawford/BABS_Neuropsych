@@ -12,8 +12,8 @@ rm(list=ls())
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-BISBAS.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBAS.csv"
+# Import data 
+BISBAS.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/BISBAS_raw.csv"
 BISBAS <-read.csv(BISBAS.path, header = T) %>% select(BABS_ID, starts_with("BISBAS")) %>%
   group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
 BISBAS.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBAS_imputed_sum.csv"

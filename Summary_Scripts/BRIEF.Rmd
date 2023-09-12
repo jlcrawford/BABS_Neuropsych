@@ -12,8 +12,8 @@ rm(list=ls())
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-BRIEF.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BRIEF.csv"
+# Import data
+BRIEF.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/BRIEF_raw.csv"
 BRIEF <-read.csv(BRIEF.path, header = T) %>% select(BABS_ID, starts_with("BRIEF")) %>%
   group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
 BRIEF.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BRIEF_imputed_sum.csv"

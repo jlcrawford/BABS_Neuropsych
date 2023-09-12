@@ -587,8 +587,8 @@ display: none;
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-BISBAS.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBAS.csv&quot;
+# Import data 
+BISBAS.path &lt;- &quot;/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/BISBAS_raw.csv&quot;
 BISBAS &lt;-read.csv(BISBAS.path, header = T) %&gt;% select(BABS_ID, starts_with(&quot;BISBAS&quot;)) %&gt;%
   group_by(BABS_ID) %&gt;% mutate_if(is.character, as.integer) %&gt;% ungroup()
 BISBAS.output.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/BISBAS_imputed_sum.csv&quot;</code></pre>

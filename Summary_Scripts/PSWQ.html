@@ -587,8 +587,8 @@ display: none;
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-PSWQ.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSWQ.csv&quot;
+# Import data
+PSWQ.path &lt;- &quot;/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/PSWQ_raw.csv&quot;
 PSWQ &lt;-read.csv(PSWQ.path, header = T) %&gt;% select(BABS_ID, starts_with(&quot;PSWQ&quot;)) %&gt;%
   group_by(BABS_ID) %&gt;% mutate_if(is.character, as.integer) %&gt;% ungroup()
 PSWQ.output.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSWQ_imputed_sum.csv&quot;</code></pre>

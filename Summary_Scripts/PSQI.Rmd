@@ -12,8 +12,8 @@ rm(list=ls())
 #Import relevant packages
 library(kableExtra); library(psych); library(tabledown); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-PSQI.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSQI.csv"
+# Import data
+PSQI.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/PSQI_raw.csv"
 PSQI <-read.csv(PSQI.path, header = T) %>% select(BABS_ID, starts_with("PSQI")) %>%
   select(-c(PSQI_5j_text, PSQI_10e_desc)) %>%
   group_by(BABS_ID, PSQI_1, PSQI_3) %>% mutate_if(is.character, as.integer) %>% ungroup()

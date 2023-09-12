@@ -587,8 +587,8 @@ display: none;
 #Import relevant packages
 library(kableExtra); library(psych); library(tabledown); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-PSQI.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSQI.csv&quot;
+# Import data
+PSQI.path &lt;- &quot;/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/PSQI_raw.csv&quot;
 PSQI &lt;-read.csv(PSQI.path, header = T) %&gt;% select(BABS_ID, starts_with(&quot;PSQI&quot;)) %&gt;%
   select(-c(PSQI_5j_text, PSQI_10e_desc)) %&gt;%
   group_by(BABS_ID, PSQI_1, PSQI_3) %&gt;% mutate_if(is.character, as.integer) %&gt;% ungroup()
@@ -638,7 +638,7 @@ PSQI.sum &lt;- PSQI.sleep.int %&gt;%
          PSQI = PSQIDURAT + PSQIDISTB + PSQILATEN + PSQIDAYDYS + PSQIHSE + PSQISLPQUAL + PSQIMEDS) %&gt;%
   select(BABS_ID, PSQI_Session, PSQI, PSQIDURAT, PSQIDISTB, PSQILATEN, PSQIDAYDYS, PSQIHSE, PSQISLPQUAL, PSQIMEDS)
 #to save the results, un-comment the line below; file path &amp; name can be adjusted in the first code chunk
-write.csv(PSQI.sum, file = PSQI.output.path, row.names = F)</code></pre>
+#write.csv(PSQI.sum, file = PSQI.output.path, row.names = F)</code></pre>
 <div id="descriptive-summary-of-psqi-responses" class="section level3">
 <h3>Descriptive summary of PSQI responses</h3>
 <pre class="r"><code>#counting the number of observations and summarizing mean &amp; SD

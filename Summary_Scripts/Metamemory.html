@@ -587,8 +587,8 @@ display: none;
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-Metamemory.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/Metamemory.csv&quot;
+# Import data
+Metamemory.path &lt;- &quot;/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/Metamemory_raw.csv&quot;
 Metamemory &lt;-read.csv(Metamemory.path, header = T) %&gt;% select(BABS_ID, starts_with(&quot;Metamem&quot;)) %&gt;%
   group_by(BABS_ID) %&gt;% mutate_if(is.character, as.integer) %&gt;% ungroup()
 Metamemory.output.path &lt;- &quot;~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/Metamemory_imputed_sum.csv&quot;</code></pre>

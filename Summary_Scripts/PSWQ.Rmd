@@ -12,8 +12,8 @@ rm(list=ls())
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-PSWQ.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSWQ.csv"
+# Import data
+PSWQ.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/PSWQ_raw.csv"
 PSWQ <-read.csv(PSWQ.path, header = T) %>% select(BABS_ID, starts_with("PSWQ")) %>%
   group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
 PSWQ.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/PSWQ_imputed_sum.csv"

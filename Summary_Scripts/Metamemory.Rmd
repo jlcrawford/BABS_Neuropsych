@@ -12,8 +12,8 @@ rm(list=ls())
 #Import relevant packages
 library(kableExtra); library(psych); library(tidyverse)
 
-# Import data (will update path to Shared Drive once data entry is complete)
-Metamemory.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/Metamemory.csv"
+# Import data
+Metamemory.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/Metamemory_raw.csv"
 Metamemory <-read.csv(Metamemory.path, header = T) %>% select(BABS_ID, starts_with("Metamem")) %>%
   group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
 Metamemory.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/Metamemory_imputed_sum.csv"
