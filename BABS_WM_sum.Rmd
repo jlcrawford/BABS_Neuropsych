@@ -63,114 +63,97 @@ Variable names: NBack_ACC_1 = 1-Back Accuracy; NBack_ACC_2 = 2-Back Accuracy; NB
 #Make data frames for N-Back data
 #Early participants BABS001-BABS024 underwent "easier" version of the N-Back
 #"Easy" Conditions from Session 1
-sub.IDs.sess1.easy <- c("BABS005", "BABS006","BABS008", "BABS024")
-sub.IDs.sess1.easy.num.tb <- sub.IDs.sess1.easy %>% as_tibble() %>%
-  mutate(num.var = str_remove(value, "^BABS")) %>% select(num.var)
-sub.IDs.sess1.easy.num <- as.character(sub.IDs.sess1.easy.num.tb$num.var)
+sub.IDs.sess1.easy <- c("BABS005", "BABS006","BABS008", "BABS024","BABS004", "BABS007", "BABS009", "BABS010", "BABS011", "BABS012", "BABS013", "BABS014", "BABS015", "BABS016", "BABS017", "BABS019", "BABS020", "BABS021", "BABS022", "BABS023")
 #data frame
 Nback.easy.sess1 <- data_frame()
-  for (nid in 1:length(sub.IDs.sess1.easy.num)) { 
-      Nback.fname <- paste0(sess.path, "BABS", sub.IDs.sess1.easy.num[nid], "/Session_1/NBACK/","N-Back_", sub.IDs.sess1.easy.num[nid], "-1.xlsx");
-      file_data <- read_xlsx(Nback.fname, skip=1) %>% select(Subject, blockListOneBack, blockListTwoBack, Trial, `image[Trial]`, `stim.ACC[Trial]`,  `stim.RT[Trial]`);
+  for (sid in 1:length(sub.IDs.sess1.easy)) { 
+      Nback.fname <- paste0(sess.path, sub.IDs.sess1.easy[sid], "/Session_1/NBACK/","NBack_", sub.IDs.sess1.easy[sid], "_Session_1.csv");
+      file_data <- read.csv(Nback.fname) %>% select(SubjectID, Session.1, Procedure, Running, blockname, trial_type, stim.ACC, stim.RT);
 Nback.easy.sess1 <- bind_rows(Nback.easy.sess1, file_data);
   }
 #creating tidy data frame
-Nback.easy.sess1.clean <- Nback.easy.sess1 %>% filter(Trial <25) %>%
-  mutate(Level = if_else(blockListOneBack < 4 & !is.na(blockListOneBack), 1, 2),
-         Block = if_else(blockListOneBack < 4  & !is.na(blockListOneBack), blockListOneBack, blockListTwoBack), 
-         ACC = `stim.ACC[Trial]`,
-         RT = `stim.RT[Trial]`) %>%
-  select(Subject, Level, Block, Trial, ACC, RT)
+Nback.easy.sess1.clean <- Nback.easy.sess1 %>%
+  mutate(Subject = SubjectID,
+         Session = Session.1,
+         Level = if_else((Procedure == "trialproc" & Running == "trialList"), 1, 2),
+         Block = blockname,
+         TrialType = trial_type,
+         ACC = stim.ACC,
+         RT = stim.RT) %>% filter(Block == 1 | Block == 2 | Block == 3) %>% filter(!is.na(TrialType)) %>%
+  select(Subject, Session, Level, Block, TrialType, ACC, RT)
+
 #"Easy" Conditions from Session 2
 sub.IDs.sess2.easy <- c("BABS004", "BABS007", "BABS009", "BABS010", "BABS011", "BABS012", "BABS013", "BABS014", "BABS015", "BABS016", "BABS017", "BABS019", "BABS020", "BABS021", "BABS022", "BABS023")
-sub.IDs.sess2.easy.num.tb <- sub.IDs.sess2.easy %>% as_tibble() %>%
-  mutate(num.var = str_remove(value, "^BABS")) %>% select(num.var)
-sub.IDs.sess2.easy.num <- as.character(sub.IDs.sess2.easy.num.tb$num.var)
 #data frame
 Nback.easy.sess2 <- data_frame()
-  for (nid in 1:length(sub.IDs.sess2.easy.num)) { 
-      Nback.fname <- paste0(sess.path, "BABS", sub.IDs.sess2.easy.num[nid], "/Session_2/NBACK/","N-Back_", sub.IDs.sess2.easy.num[nid], "-2.xlsx");
-      file_data <- read_xlsx(Nback.fname, skip=1) %>% select(Subject, blockListOneBack, blockListTwoBack, Trial, `image[Trial]`, `stim.ACC[Trial]`,  `stim.RT[Trial]`);
+  for (sid in 1:length(sub.IDs.sess2.easy)) { 
+      Nback.fname <- paste0(sess.path, sub.IDs.sess2.easy[sid], "/Session_2/NBACK/","NBack_", sub.IDs.sess2.easy[sid], "_Session_2.csv");
+      file_data <- read.csv(Nback.fname) %>% select(SubjectID, Session.1, Procedure, Running, blockname, trial_type, stim.ACC, stim.RT);
 Nback.easy.sess2 <- bind_rows(Nback.easy.sess2, file_data);
   }
 #creating tidy data frame
-Nback.easy.sess2.clean <- Nback.easy.sess2 %>% filter(Trial <25) %>%
-  mutate(Level = if_else(blockListOneBack < 4 & !is.na(blockListOneBack), 1, 2),
-         Block = if_else(blockListOneBack < 4  & !is.na(blockListOneBack), blockListOneBack, blockListTwoBack), 
-         ACC = `stim.ACC[Trial]`,
-         RT = `stim.RT[Trial]`) %>%
-  select(Subject, Level, Block, Trial, ACC, RT)
+Nback.easy.sess2.clean <- Nback.easy.sess2 %>%
+  mutate(Subject = SubjectID,
+         Session = Session.1,
+         Level = if_else((Procedure == "trialproc" & Running == "trialList"), 1, 2),
+         Block = blockname,
+         TrialType = trial_type,
+         ACC = stim.ACC,
+         RT = stim.RT) %>% filter(Block == 1 | Block == 2 | Block == 3) %>% filter(!is.na(TrialType)) %>%
+  select(Subject, Session, Level, Block, TrialType, ACC, RT)
+
 #creating merged data frame with all "easy" subjects
 d.Nback.easy <- rbind(Nback.easy.sess1.clean, Nback.easy.sess2.clean)
+#"Hard" Conditions from Session 1
+sub.IDs.sess1.hard <- c("BABS025","BABS026","BABS028","BABS029","BABS030","BABS031","BABS033","BABS035","BABS036","BABS037","BABS038","BABS040", "BABS042","BABS043", "BABS044", "BABS045", "BABS046", "BABS049", "BABS051", "BABS053", "BABS055", "BABS056", "BABS057", "BABS058", "BABS059", "BABS060", "BABS061", "BABS062", "BABS066", "BABS067", "BABS069", "BABS070", "BABS071", "BABS072", "BABS073", "BABS074", "BABS075", "BABS076", "BABS077", "BABS079", "BABS080", "BABS081", "BABS082", "BABS083", "BABS084", "BABS085", "BABS086", "BABS087", "BABS088", "BABS089", "BABS090", "BABS091", "BABS092", "BABS093", "BABS094", "BABS095", "BABS096", "BABS097", "BABS098", "BABS099", "BABS100", "BABS101", "BABS102", "BABS104", "BABS105","BABS106", "BABS107", "BABS108", "BABS110", "BABS111", "BABS112", "BABS113", "BABS114", "BABS115", "BABS116", "BABS117", "BABS118", "BABS119", "BABS121", "BABS122", "BABS124", "BABS125", "BABS126", "BABS128", "BABS129", "BABS130", "BABS131", "BABS132", "BABS133", "BABS134", "BABS135", "BABS136", "BABS138", "BABS139", "BABS141", "BABS142", "BABS143", "BABS145", "BABS146", "BABS147", "BABS148", "BABS150", "BABS151", "BABS152", "BABS154", "BABS155", "BABS157", "BABS158", "BABS159", "BABS160", "BABS161", "BABS162", "BABS163", "BABS166", "BABS168", "BABS169", "BABS170", "BABS171", "BABS172", "BABS173", "BABS174", "BABS175", "BABS176", "BABS177", "BABS179", "BABS180", "BABS181", "BABS196", "BABS266", "BABS272", "BABS279", "BABS284")
+#data frame
+Nback.hard.sess1 <- data_frame()
+  for (sid in 1:length(sub.IDs.sess1.hard)) { 
+      Nback.fname <- paste0(sess.path, sub.IDs.sess1.hard[sid], "/Session_1/NBACK/","NBack_", sub.IDs.sess1.hard[sid], "_Session_1.csv");
+      file_data <- read.csv(Nback.fname) %>% select(SubjectID, Session.1, Procedure, Running, blockname, trial_type, stim.ACC, stim.RT);
+Nback.hard.sess1 <- bind_rows(Nback.hard.sess1, file_data);
+  }
+#creating tidy data frame
+Nback.hard.sess1.clean <- Nback.hard.sess1 %>%
+  mutate(Subject = SubjectID,
+         Session = Session.1,
+         Level = if_else((Procedure == "trialproc" & Running == "trialList"), 1, 2),
+         Block = blockname,
+         TrialType = trial_type,
+         ACC = stim.ACC,
+         RT = stim.RT) %>% filter(Block == 1 | Block == 2 | Block == 3) %>% filter(!is.na(TrialType)) %>%
+  select(Subject, Session, Level, Block, TrialType, ACC, RT)
 #"Hard" Conditions from Session 2 
 sub.IDs.sess2.hard <- c("BABS025","BABS026","BABS028","BABS029","BABS030","BABS031","BABS033","BABS035","BABS036","BABS037","BABS038","BABS040", "BABS042")
-sub.IDs.sess2.hard.num.tb <- sub.IDs.sess2.hard %>% as_tibble() %>%
-  mutate(num.var = str_remove(value, "^BABS")) %>% select(num.var)
-sub.IDs.sess2.hard.num <- as.character(sub.IDs.sess2.hard.num.tb$num.var)
 #data frame
 Nback.hard.sess2 <- data_frame()
-  for (nid in 1:length(sub.IDs.sess2.hard.num)) { 
-      Nback.fname <- paste0(sess.path, "BABS", sub.IDs.sess2.hard.num[nid], "/Session_2/NBACK/","N-Back_", sub.IDs.sess2.hard.num[nid], "-2.xlsx");
-      file_data <- read_xlsx(Nback.fname, skip=1) %>% select(Subject, blockListOneBack, blockListTwoBack, Trial, `image[Trial]`, `stim.ACC[Trial]`,  `stim.RT[Trial]`);
+  for (sid in 1:length(sub.IDs.sess2.hard)) { 
+      Nback.fname <- paste0(sess.path, sub.IDs.sess2.hard[sid], "/Session_2/NBACK/","NBack_", sub.IDs.sess2.hard[sid], "_Session_2.csv");
+      file_data <- read.csv(Nback.fname) %>% select(SubjectID, Session.1, Procedure, Running, blockname, trial_type, stim.ACC, stim.RT);
 Nback.hard.sess2 <- bind_rows(Nback.hard.sess2, file_data);
   }
 #creating tidy data frame
-Nback.hard.sess2.clean <- Nback.hard.sess2 %>% filter(Trial <25) %>%
-  mutate(Level = if_else(blockListOneBack < 4 & !is.na(blockListOneBack), 1, 2),
-         Block = if_else(blockListOneBack < 4  & !is.na(blockListOneBack), blockListOneBack, blockListTwoBack), 
-         ACC = `stim.ACC[Trial]`,
-         RT = `stim.RT[Trial]`) %>%
-  select(Subject, Level, Block, Trial, ACC, RT)
-#"Hard" Conditions from Session 1 (BABS 273 needs to be converted; 286, 288 have corrupted files)
-sub.IDs.sess1.hard.1 <- c("BABS043", "BABS044", "BABS045", "BABS046", "BABS049", "BABS051", "BABS053", "BABS055", "BABS056", "BABS057", "BABS058", "BABS059", "BABS060", "BABS061", "BABS062", "BABS066", "BABS067", "BABS069", "BABS070", "BABS071", "BABS072", "BABS073", "BABS074", "BABS075", "BABS076", "BABS077", "BABS079", "BABS080", "BABS081", "BABS082", "BABS083", "BABS084", "BABS085", "BABS086", "BABS087", "BABS088", "BABS089", "BABS090", "BABS091", "BABS092", "BABS093", "BABS094", "BABS095", "BABS096", "BABS097", "BABS098", "BABS099", "BABS100", "BABS101", "BABS102", "BABS104", "BABS105")
+Nback.hard.sess2.clean <- Nback.hard.sess2 %>%
+  mutate(Subject = SubjectID,
+         Session = Session.1,
+         Level = if_else((Procedure == "trialproc" & Running == "trialList"), 1, 2),
+         Block = blockname,
+         TrialType = trial_type,
+         ACC = stim.ACC,
+         RT = stim.RT) %>% filter(Block == 1 | Block == 2 | Block == 3) %>% filter(!is.na(TrialType)) %>%
+  select(Subject, Session, Level, Block, TrialType, ACC, RT)
 
-sub.IDs.sess1.hard.2 <- c("BABS106", "BABS107", "BABS108", "BABS110", "BABS111", "BABS112", "BABS113", "BABS114", "BABS115", "BABS116", "BABS117", "BABS118", "BABS119", "BABS121", "BABS122", "BABS124", "BABS125", "BABS126", "BABS128", "BABS129", "BABS130", "BABS131", "BABS132", "BABS133", "BABS134", "BABS135", "BABS136", "BABS138", "BABS139", "BABS141", "BABS142", "BABS143", "BABS145", "BABS146", "BABS147", "BABS148", "BABS150", "BABS151", "BABS152", "BABS154", "BABS155", "BABS157", "BABS158", "BABS159", "BABS160", "BABS161", "BABS162", "BABS163", "BABS166", "BABS168", "BABS169", "BABS170", "BABS171", "BABS172", "BABS173", "BABS174", "BABS175", "BABS176", "BABS177", "BABS179", "BABS180", "BABS181", "BABS196", "BABS266", "BABS272", "BABS279", "BABS284")
-#for sheets without header line deleted
-sub.IDs.sess1.hard.num.tb.1 <- sub.IDs.sess1.hard.1 %>% as_tibble() %>%
-  mutate(num.var = str_remove(value, "^BABS")) %>% select(num.var)
-sub.IDs.sess1.hard.num.1 <- as.character(sub.IDs.sess1.hard.num.tb.1$num.var)
-#data frame
-Nback.hard.sess1 <- data_frame()
-  for (nid in 1:length(sub.IDs.sess1.hard.num.1)) { 
-      Nback.fname <- paste0(sess.path, "BABS", sub.IDs.sess1.hard.num.1[nid], "/Session_1/NBACK/","N-Back_", sub.IDs.sess1.hard.num.1[nid], "-1.xlsx");
-      file_data <- read_xlsx(Nback.fname, skip=1) %>% select(Subject, blockListOneBack, blockListTwoBack, Trial, `image[Trial]`, `stim.ACC[Trial]`,  `stim.RT[Trial]`);
-Nback.hard.sess1 <- bind_rows(Nback.hard.sess1, file_data);
-  }
-#for sheets with header line deleted
-sub.IDs.sess1.hard.num.tb.2 <- sub.IDs.sess1.hard.2 %>% as_tibble() %>%
-  mutate(num.var = str_remove(value, "^BABS")) %>% select(num.var)
-sub.IDs.sess1.hard.num.2 <- as.character(sub.IDs.sess1.hard.num.tb.2$num.var)
-#data frame
-Nback.hard.sess1.2 <- data_frame()
-  for (nid in 1:length(sub.IDs.sess1.hard.num.2)) { 
-      Nback.fname <- paste0(sess.path, "BABS", sub.IDs.sess1.hard.num.2[nid], "/Session_1/NBACK/","N-Back_", sub.IDs.sess1.hard.num.2[nid], "-1.xlsx");
-      file_data <- read_xlsx(Nback.fname) %>% select(Subject, blockListOneBack, blockListTwoBack, Trial, `image[Trial]`, `stim.ACC[Trial]`,  `stim.RT[Trial]`);
-Nback.hard.sess1.2 <- bind_rows(Nback.hard.sess1.2, file_data);
-  }
-#creating tidy data frames
-Nback.hard.sess2.clean.1 <- Nback.hard.sess1 %>% filter(Trial <25) %>%
-  mutate(Level = if_else(blockListOneBack < 4 & !is.na(blockListOneBack), 1, 2),
-         Block = if_else(blockListOneBack < 4  & !is.na(blockListOneBack), blockListOneBack, blockListTwoBack), 
-         ACC = `stim.ACC[Trial]`,
-         RT = `stim.RT[Trial]`) %>%
-  select(Subject, Level, Block, Trial, ACC, RT)
-Nback.hard.sess2.clean.2 <- Nback.hard.sess1.2 %>% filter(Trial <25) %>%
-  mutate(Level = if_else(blockListOneBack < 4 & !is.na(blockListOneBack), 1, 2),
-         Block = if_else(blockListOneBack < 4  & !is.na(blockListOneBack), blockListOneBack, blockListTwoBack), 
-         ACC = `stim.ACC[Trial]`,
-         RT = `stim.RT[Trial]`) %>%
-  select(Subject, Level, Block, Trial, ACC, RT)
 #creating merged data frame with all "hard" subjects
-d.Nback.hard <- rbind(Nback.hard.sess2.clean, Nback.hard.sess2.clean.1, Nback.hard.sess2.clean.2)
+d.Nback.hard <- rbind(Nback.hard.sess2.clean, Nback.hard.sess1.clean)
 ```
 
 ```{r NBack, warning=FALSE, message=FALSE}
 #summarizing "easy" participants by load level and block
 ##ACC
-Easy.NBack.ACC.sum <- d.Nback.easy %>% select(Level, Block, ACC) %>% group_by(Level, Block) %>% 
+Easy.NBack.ACC.sum <- d.Nback.easy %>% filter(Session == 1) %>% select(Level, Block, ACC) %>% group_by(Level, Block) %>% 
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 ##RT
-Easy.NBack.RT.sum <- d.Nback.easy %>% select(Level, Block, RT) %>% group_by(Level, Block) %>% filter(RT != 0) %>%
+Easy.NBack.RT.sum <- d.Nback.easy %>% filter (Session == 1) %>% select(Level, Block, RT) %>% group_by(Level, Block) %>% filter(RT != 0) %>%
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 
 #plotting N-Back performance for "easy" version
@@ -189,11 +172,11 @@ p.Nback.easy.RT
 
 #summarizing "hard" participants by load level and block
 ##ACC
-Hard.NBack.ACC.sum <- d.Nback.hard %>% select(Level, Block, ACC) %>% group_by(Level, Block) %>% 
+Hard.NBack.ACC.sum <- d.Nback.hard %>% filter(Session == 1) %>% select(Level, Block, ACC) %>% group_by(Level, Block) %>% 
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
+
 ##RT
-Hard.NBack.RT.sum <- d.Nback.hard %>% select(Level, Block, RT) %>% group_by(Level, Block) %>% filter(RT != 0) %>%
-  summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
+Hard.NBack.RT.sum <- d.Nback.hard %>% filter (Session == 1) %>% select(Level, Block, RT) %>% group_by(Level, Block) %>% filter(RT != 0) %>% summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 
 #plotting N-Back performance for "hard" version (133 participants with both levels of N)
 p.Nback.hard.acc <- ggplot(Hard.NBack.ACC.sum, aes(x=Block, y=mean)) +
@@ -210,10 +193,9 @@ p.Nback.hard.RT <- ggplot(Hard.NBack.RT.sum, aes(x=Block, y=mean)) +
 p.Nback.hard.RT
 
 #summarizing ACC across load levels
-Hard.NBack.ACC.agg.sum <- d.Nback.hard %>% select(Level, ACC) %>% group_by(Level) %>% 
+Hard.NBack.ACC.agg.sum <- d.Nback.hard %>% filter(Session == 1) %>% select(Level, ACC) %>% group_by(Level) %>% 
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
-
-Hard.NBack.ACC.subj.sum <- d.Nback.hard %>% select(Subject, Level, ACC) %>% group_by(Subject, Level) %>% 
+Hard.NBack.ACC.subj.sum <- d.Nback.hard %>% filter(Session == 1) %>% select(Subject, Level, ACC) %>% group_by(Subject, Level) %>% 
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 #plot
 Hard.NBack.ACC.agg.sum$Level <- factor(Hard.NBack.ACC.agg.sum$Level, levels = c(1,2), labels = c(1,2))
@@ -229,10 +211,10 @@ fig.Nback <- fig.Nback.lines + guides(colour=FALSE)
 fig.Nback
 
 #summarizing RT across load levels
-Hard.NBack.RT.agg.sum <- d.Nback.hard %>% select(Level, RT) %>% group_by(Level) %>% filter(RT != 0) %>%
+Hard.NBack.RT.agg.sum <- d.Nback.hard %>% filter(Session == 1) %>% select(Level, RT) %>% group_by(Level) %>% filter(RT != 0) %>%
   summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 
-Hard.NBack.RT.subj.sum <- d.Nback.hard %>% select(Subject, Level, RT) %>% group_by(Subject, Level) %>% filter(RT != 0) %>% summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
+Hard.NBack.RT.subj.sum <- d.Nback.hard %>% filter(Session == 1) %>% select(Subject, Level, RT) %>% group_by(Subject, Level) %>% filter(RT != 0) %>% summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
 #plot
 Hard.NBack.RT.agg.sum$Level <- factor(Hard.NBack.RT.agg.sum$Level, levels = c(1,2), labels = c(1,2))
 fig.Nback.lines.RT <- ggplot(Hard.NBack.RT.agg.sum, aes(x=Level, y=mean)) + 
@@ -259,7 +241,7 @@ d.digSpan.Trim <- d.DigSpan.F.trim %>% inner_join(d.DigSpan.B.trim)
 d.KeepTrack.trim <- d.KeepTrack %>% filter(BABS_ID %in% sub.IDs) %>% select(BABS_ID, KEEPTRACK_TWOCATEGORIES_TOTAL, THREECATEGORIES_TOTAL, KEEPTRACK_FOURCATEGORIES_TOTAL) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
 d.NBack.RT.wide<- Hard.NBack.RT.subj.sum %>% select(Subject, mean, Level) %>% pivot_wider(id_cols = Subject, names_from = Level,names_prefix = "NBack_RT_", values_from = mean)
 d.NBack.ACC.wide<- Hard.NBack.ACC.subj.sum %>% select(Subject, mean, Level) %>% pivot_wider(id_cols = Subject, names_from = Level,names_prefix = "NBACK_ACC_", values_from = mean)
-d.NBack.Trim <-d.NBack.ACC.wide %>% inner_join(d.NBack.RT.wide)
+d.NBack.Trim <-d.NBack.ACC.wide %>% inner_join(d.NBack.RT.wide) %>% mutate(Subject = parse_number(Subject))
 #creating data frame with all WM measures
 d.WM <- d.digSpan.Trim %>% inner_join(d.NBack.Trim) %>% inner_join(d.KeepTrack.trim) %>% select(-Subject) %>%
   rename(DS_For = DIGITSPAN_FORWARD, DS_Back = DIGITSPAN_BACKWARD, KT_2 = KEEPTRACK_TWOCATEGORIES_TOTAL, KT_3 = THREECATEGORIES_TOTAL, KT_4 = KEEPTRACK_FOURCATEGORIES_TOTAL)
