@@ -2,9 +2,10 @@
 title: "BABS Learning and Memory Summary"
 author: "JLC"
 date: "`r Sys.Date()`"
-output: 
+output:
   html_document:
     code_folding: hide
+  pdf_document: default
 ---
 
 # Learning and Memory Measures: BABS Neuropsych Battery
@@ -28,7 +29,9 @@ BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
 ```{r CVLT, warning=FALSE, message=FALSE}
 d.CVLT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CVLT")) %>%
                                           distinct(BABS_ID, .keep_all = T) %>%
-  mutate_at(vars(starts_with("CVLT")), as.numeric)
+  mutate_at(vars(starts_with("CVLT")), as.numeric) %>%
+  mutate(Learning_sum = CVLT_LISTA_FR_TRIAL1 + CVLT_LISTA_FR_TRIAL2 + CVLT_LISTA_FR_TRIAL3 + CVLT_LISTA_FR_TRIAL4 + CVLT_LISTA_FR_TRIAL5) %>%
+  select(-starts_with("CVLT_LISTA")) %>% filter(BABS_ID != 263)
 #counting the number of observations and summarizing mean & SD
 CVLT.sum <- d.CVLT %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
   filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
@@ -90,18 +93,22 @@ FNAME.clean <- FNAME %>% group_by(subject) %>%
 #BABS subject IDs for analysis
 sub.IDs <- c("BABS025","BABS026","BABS028","BABS029","BABS030","BABS031","BABS033","BABS035","BABS036","BABS037","BABS038","BABS040", "BABS042", "BABS043", "BABS044", "BABS045", "BABS046", "BABS049", "BABS051", "BABS053", "BABS055", "BABS056", "BABS057", "BABS058", "BABS059", "BABS060", "BABS061", "BABS062", "BABS066", "BABS067", "BABS069", "BABS070", "BABS071", "BABS072", "BABS073", "BABS074", "BABS075", "BABS076", "BABS077", "BABS079", "BABS080", "BABS081", "BABS082", "BABS083", "BABS084", "BABS085", "BABS086", "BABS087", "BABS088", "BABS089", "BABS090", "BABS091", "BABS092", "BABS093", "BABS094", "BABS095", "BABS096", "BABS097", "BABS098", "BABS099", "BABS100", "BABS101", "BABS102", "BABS104", "BABS105", "BABS106", "BABS107", "BABS108", "BABS110", "BABS111", "BABS112", "BABS113", "BABS114", "BABS115", "BABS116", "BABS117", "BABS118", "BABS119", "BABS121", "BABS122", "BABS124", "BABS125", "BABS126", "BABS128", "BABS129", "BABS130", "BABS131", "BABS132", "BABS133", "BABS134", "BABS135", "BABS136", "BABS138", "BABS139", "BABS141", "BABS142", "BABS143", "BABS145", "BABS146", "BABS147", "BABS148", "BABS150", "BABS151", "BABS152", "BABS154", "BABS155", "BABS157", "BABS158", "BABS159", "BABS160", "BABS161", "BABS162", "BABS163", "BABS166", "BABS168", "BABS169", "BABS170", "BABS171", "BABS172", "BABS173", "BABS174", "BABS175", "BABS176", "BABS177", "BABS179", "BABS180", "BABS181", "BABS196", "BABS266", "BABS272", "BABS279", "BABS284")
 #merging data frames and cleaning data
-d.DigSpan.F.trim <- d.DigSpan.F %>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
-d.DigSpan.B.trim <- d.DigSpan.B %>% filter(BABS_ID %in% sub.IDs) %>% select(BABS_ID, DIGITSPAN_BACKWARD) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
-d.digSpan.Trim <- d.DigSpan.F.trim %>% inner_join(d.DigSpan.B.trim)
-d.KeepTrack.trim <- d.KeepTrack %>% filter(BABS_ID %in% sub.IDs) %>% select(BABS_ID, KEEPTRACK_TWOCATEGORIES_TOTAL, THREECATEGORIES_TOTAL, KEEPTRACK_FOURCATEGORIES_TOTAL) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
-d.NBack.RT.wide<- Hard.NBack.RT.subj.sum %>% select(Subject, mean, Level) %>% pivot_wider(id_cols = Subject, names_from = Level,names_prefix = "NBack_RT_", values_from = mean)
-d.NBack.ACC.wide<- Hard.NBack.ACC.subj.sum %>% select(Subject, mean, Level) %>% pivot_wider(id_cols = Subject, names_from = Level,names_prefix = "NBACK_ACC_", values_from = mean)
-d.NBack.Trim <-d.NBack.ACC.wide %>% inner_join(d.NBack.RT.wide)
-#creating data frame with all WM measures
-d.WM <- d.digSpan.Trim %>% inner_join(d.NBack.Trim) %>% inner_join(d.KeepTrack.trim) %>% select(-Subject) %>%
-  rename(DS_For = DIGITSPAN_FORWARD, DS_Back = DIGITSPAN_BACKWARD, KT_2 = KEEPTRACK_TWOCATEGORIES_TOTAL, KT_3 = THREECATEGORIES_TOTAL, KT_4 = KEEPTRACK_FOURCATEGORIES_TOTAL)
-corr.WM <- correlation(d.WM)
-corr.WM %>%
+d.CVLT.Trim <- d.CVLT %>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
+#correlating CVLT variables
+corr.CVLT <- correlation(d.CVLT.Trim)
+corr.CVLT %>%
   summary(redundant = F) %>%
   plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+d.FNAME.Trim <- FNAME.clean %>% mutate(Subject = parse_number(subject)) %>% select(-subject)
+#correlating FNAME variables
+corr.FNAME <- correlation(d.FNAME.Trim)
+corr.FNAME %>%
+  summary(redundant = F) %>%
+  plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+#creating data frame with all WM measures
+d.LM <- d.CVLT.Trim %>% inner_join(d.FNAME.Trim, by = "Subject")
+#corr.LM <- correlation(d.LM)
+#corr.LM %>%
+  #summary(redundant = F) %>%
+  #plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 ```

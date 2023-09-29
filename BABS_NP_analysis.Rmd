@@ -1,0 +1,316 @@
+---
+title: "BABS Neuropsych Analysis"
+author: "JLC"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+  pdf_document: default
+---
+
+# Examining the relationships within and between working memory & learning and memory measures
+
+```{r setup, warning=FALSE, message=FALSE}
+rm(list=ls())
+
+# Packages
+library(knitr); library(easystats); library(readxl); library(psych); library(tidyverse)
+
+#Create data directories
+NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
+sess.path <-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/"
+metamem.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/Metamemory_imputed_sum.csv"
+BRIEF.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/BRIEF_imputed_sum.csv"
+MASQ.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/MASQ_imputed_sum.csv"
+PSWQ.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/PSWQ_imputed_sum.csv"
+
+#Make data frames for neuropsych battery items from excel spreadsheet
+BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
+Metamem <- read.csv(metamem.path, header = T)
+BRIEF <- read.csv(BRIEF.path, header = T)
+MASQ <- read.csv(MASQ.path, header = T)
+PSWQ <- read.csv(PSWQ.path, header = T)
+```
+
+## Cognitive Domains: Learning and Memory, Working Memory
+
+```{r LearnMem, warning=FALSE, message=FALSE}
+d.CVLT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CVLT")) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("CVLT")), as.numeric) %>%
+  mutate(Learning_sum = CVLT_LISTA_FR_TRIAL1 + CVLT_LISTA_FR_TRIAL2 + CVLT_LISTA_FR_TRIAL3 + CVLT_LISTA_FR_TRIAL4 + CVLT_LISTA_FR_TRIAL5) %>%
+  select(-starts_with("CVLT_LISTA")) %>% filter(BABS_ID != 263)
+
+sub.IDs <- c("BABS025","BABS026","BABS028","BABS029","BABS030","BABS031","BABS033","BABS035","BABS036","BABS037","BABS038","BABS040", "BABS042","BABS043", "BABS044", "BABS045", "BABS046", "BABS049", "BABS051", "BABS053", "BABS055", "BABS056", "BABS057", "BABS058", "BABS059", "BABS060", "BABS061", "BABS062", "BABS066", "BABS067", "BABS069", "BABS070", "BABS071", "BABS072", "BABS073", "BABS074", "BABS075", "BABS076", "BABS077", "BABS079", "BABS080", "BABS081", "BABS082", "BABS083", "BABS084", "BABS085", "BABS086", "BABS087", "BABS088", "BABS089", "BABS090", "BABS091", "BABS092", "BABS093", "BABS094", "BABS095", "BABS096", "BABS097", "BABS098", "BABS099", "BABS100", "BABS101", "BABS102", "BABS104", "BABS105","BABS106", "BABS107", "BABS108", "BABS110", "BABS111", "BABS112", "BABS113", "BABS114", "BABS115", "BABS116", "BABS117", "BABS118", "BABS119", "BABS121", "BABS122", "BABS124", "BABS125", "BABS126", "BABS128", "BABS129", "BABS130", "BABS131", "BABS132", "BABS133", "BABS134", "BABS135", "BABS136", "BABS138", "BABS139", "BABS141", "BABS142", "BABS143", "BABS145", "BABS146", "BABS147", "BABS148", "BABS150", "BABS151", "BABS152", "BABS154", "BABS155", "BABS157", "BABS158", "BABS159", "BABS160", "BABS161", "BABS162", "BABS163", "BABS166", "BABS168", "BABS169", "BABS170", "BABS171", "BABS172", "BABS173", "BABS174", "BABS175", "BABS176", "BABS177", "BABS179", "BABS180", "BABS181", "BABS196", "BABS266", "BABS272", "BABS279", "BABS284")
+
+Names <- c("fiona","kimberly","maria","courtney","Alice","julie","olivia","laura","miriam","kate","lucy",
+           "paula","jane","stella","susan","isabelle")
+Occupations <- c("teacher","dentist","detective","optometrist","editor","dancer","weaver","chef","pilot",
+                 "nutritionist","electrician","lawyer","painter","scientist","architect","photographer")
+
+#data frame
+FNAME <- data_frame()
+  for (sid in 1:length(sub.IDs)) { 
+      FNAME.fname <- paste0(sess.path, sub.IDs[sid], "/Session_1/FNAME/");
+      file <- dir(FNAME.fname, pattern = ".iqdat");
+      setwd(FNAME.fname);
+      file_data <- read_delim(file[1]) %>% select(subject, blockcode, trialcode, trialnum, starts_with("values")) %>%
+        mutate(subject = as.character(subject));
+FNAME <- bind_rows(FNAME, file_data);
+  }
+
+FRN.scores <- FNAME %>% group_by(subject) %>% filter(trialcode == "FRN") %>%
+  mutate(FRN.list = str_split(as.character(values.response_FRN), ","),
+    score.FRN = sapply(FRN.list, function(x) sum(x %in% Names))) %>% select(subject, score.FRN)
+
+FRO.scores <- FNAME %>% group_by(subject) %>% filter(trialcode == "FRO") %>%
+  mutate(FRO.list = str_split(as.character(values.response_FRO), ","),
+    score.FRO = sapply(FRO.list, function(x) sum(x %in% Occupations))) %>% select(subject, score.FRO)
+
+FRN30.scores <- FNAME %>% group_by(subject) %>% filter(trialcode == "FRN30") %>%
+  mutate(FRN30.list = str_split(as.character(values.response_FRN30), ","),
+    score.FRN30 = sapply(FRN30.list, function(x) sum(x %in% Names))) %>% select(subject, score.FRN30)
+
+FRO30.scores <- FNAME %>% group_by(subject) %>% filter(trialcode == "FRO30") %>%
+  mutate(FRO30.list = str_split(as.character(values.response_FRO30), ","),
+    score.FRO30 = sapply(FRO30.list, function(x) sum(x %in% Occupations))) %>% select(subject, score.FRO30)
+
+FNAME.clean <- FNAME %>% group_by(subject) %>%
+  summarise(score.ILN = sum(values.correct_ILN, na.rm = T),
+         score.ILO = sum(values.correct_ILO, na.rm = T),
+         score.CRN = sum(values.correct_CRN, na.rm = T),
+         score.CRO = sum(values.correct_CRO, na.rm = T),
+         score.CRN30 = sum(values.correct_CRN30, na.rm = T),
+         score.CRO30 = sum(values.correct_CRO30, na.rm = T)) %>%
+  inner_join(FRN.scores) %>% inner_join(FRN30.scores) %>% inner_join(FRO.scores) %>% inner_join(FRO30.scores)
+```
+
+```{r WorkingMem, warning=FALSE, message=FALSE}
+#creating data frame with relevant variables
+d.DigSpan.F <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_FORWARD) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+    mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
+
+#creating data frame with relevant variables
+d.DigSpan.B <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_BACKWARD) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
+
+#creating data frame with relevant variables
+d.KeepTrack <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("KEEP"), THREECATEGORIES_TOTAL) %>%
+                                          distinct(BABS_ID, .keep_all = T) %>%
+  mutate_at(vars(ends_with("TOTAL")), as.numeric)
+
+#Make data frame for N-Back data
+d.Nback <- data_frame()
+  for (sid in 1:length(sub.IDs)) { 
+      Nback.fname <- paste0(sess.path, sub.IDs[sid], "/Session_1/NBACK/","NBack_", sub.IDs[sid], "_Session_1.csv");
+      file_data <- read.csv(Nback.fname) %>% select(SubjectID, Session.1, Procedure, Running, blockname, trial_type, stim.ACC, stim.RT);
+d.Nback <- bind_rows(d.Nback, file_data);
+  }
+#creating tidy data frame
+Nback.clean <- d.Nback %>%
+  mutate(Subject = SubjectID,
+         Session = Session.1,
+         Level = if_else((Procedure == "trialproc" & Running == "trialList"), 1, 2),
+         Block = blockname,
+         TrialType = trial_type,
+         ACC = stim.ACC,
+         RT = stim.RT) %>% filter(Block == 1 | Block == 2 | Block == 3) %>% filter(!is.na(TrialType)) %>%
+  select(Subject, Session, Level, Block, TrialType, ACC, RT)
+
+#summarizing ACC across load levels
+Hard.NBack.ACC.subj.sum <- Nback.clean %>% filter(Session == 1) %>% select(Subject, Level, ACC) %>% group_by(Subject, Level) %>% 
+  summarise_each(funs(mean,sd,se=sd(.)/sqrt(n())))
+```
+
+## Examining the correlational structure of performance across cognitive domains 
+
+```{r WM_comp, warning=FALSE, message=FALSE}
+#merging data frames and cleaning data
+d.DigSpan.F.trim <- d.DigSpan.F %>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(Subject, DIGITSPAN_FORWARD)
+d.DigSpan.B.trim <- d.DigSpan.B %>% filter(BABS_ID %in% sub.IDs) %>% select(BABS_ID, DIGITSPAN_BACKWARD) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
+d.digSpan.Trim <- d.DigSpan.F.trim %>% inner_join(d.DigSpan.B.trim)
+d.KeepTrack.trim <- d.KeepTrack %>% filter(BABS_ID %in% sub.IDs) %>% select(BABS_ID, KEEPTRACK_TWOCATEGORIES_TOTAL, THREECATEGORIES_TOTAL, KEEPTRACK_FOURCATEGORIES_TOTAL) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID)
+d.NBack.Trim<- Hard.NBack.ACC.subj.sum %>% select(Subject, mean, Level) %>% pivot_wider(id_cols = Subject, names_from = Level,names_prefix = "NBACK_ACC_", values_from = mean) %>% mutate(Subject = parse_number(Subject))
+#creating data frame with all WM measures
+d.WM <- d.digSpan.Trim %>% inner_join(d.NBack.Trim) %>% inner_join(d.KeepTrack.trim) %>%
+  rename(DS_For = DIGITSPAN_FORWARD, DS_Back = DIGITSPAN_BACKWARD, KT_2 = KEEPTRACK_TWOCATEGORIES_TOTAL, KT_3 = THREECATEGORIES_TOTAL, KT_4 = KEEPTRACK_FOURCATEGORIES_TOTAL) %>% drop_na()
+d.WM.comp <- d.WM %>% mutate(across(DS_For:KT_4, ~ c(scale(.))),
+                             WM_comp = DS_For + DS_Back + NBACK_ACC_1 + NBACK_ACC_2 + KT_2 + KT_3 + KT_4) %>% select(Subject, WM_comp)
+#plot distribution of composite
+p.WM.comp <- ggplot(d.WM.comp, aes(WM_comp)) +
+  geom_density() + 
+  labs(title = "Working Memory Composite") +
+  theme_classic()
+p.WM.comp
+```
+
+```{r LM_comp, warning=FALSE, message=FALSE}
+#merging data frames and cleaning data
+d.CVLT.trim <- d.CVLT%>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(Subject, Learning_sum, CVLT_LISTB_FR_CORRECT, starts_with("CVLT_SD"), starts_with("CVLT_LD_FR"), starts_with("CVLT_LD_CR"))
+d.FNAME.trim <- FNAME.clean %>% mutate(Subject = parse_number(subject)) %>% select(-subject)
+#creating data frame with all WM measures
+d.LM <- d.CVLT.trim %>% inner_join(d.FNAME.trim) %>% drop_na()
+d.LM.comp <- d.LM %>% mutate(across(Learning_sum:score.FRO30, ~ c(scale(.))),
+                             LM_comp = Learning_sum + CVLT_LISTB_FR_CORRECT + CVLT_SD_FR_CORRECT + CVLT_SD_CR_CORRECT + CVLT_LD_FR_CORRECT + CVLT_LD_CR_CORRECT + score.ILN + score.ILO + score.CRN + score.CRO + score.CRO30 + score.CRN30 + score.FRN + score.FRO + score.FRO30 + score.FRN30) %>% select(Subject, LM_comp)
+#plot distribution of composite
+p.LM.comp <- ggplot(d.LM.comp, aes(LM_comp)) +
+  geom_density() + 
+  labs(title = "Learning & Memory Composite") +
+  theme_classic()
+p.LM.comp
+```
+
+```{r corr_comp, warning=FALSE, message=FALSE}
+#merging data frames and cleaning data
+d.cog.comp <- d.LM.comp %>% inner_join(d.WM.comp)
+corr.cog.comp <- cor_test(d.cog.comp, "WM_comp", "LM_comp")
+corr.cog.comp
+plot(corr.cog.comp) + theme_classic() + labs(x = "Working Memory Composite", y = "Learning & Memory Composite")
+```
+
+## Examining the correlational structure of self-reported metacognition
+### Meta-cognitive questionnaires: Metamemory, BRIEF
+
+```{r metacog_import, warning=FALSE, message=FALSE}
+#import metamemory and examine correlation across domains
+d.metamem.trim <- Metamem %>% filter(BABS_ID %in% sub.IDs & Metamemory_Session == 1) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(-Metamemory_Session)
+
+#Metamemory
+corr.metamem <- d.metamem.trim %>% select(-Subject) %>% correlation()
+corr.metamem %>%
+  summary(redundant = F) %>%
+  plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+metamem.comp <- d.metamem.trim %>% mutate(across(Able:Strat, ~ c(scale(.))),
+                            metamem_comp = Able + Gen + Strat) %>% select(Subject, metamem_comp)
+#plot distribution of composite
+p.metamem.comp <- ggplot(metamem.comp, aes(metamem_comp)) +
+  geom_density() + 
+  labs(title = "Metamemory Composite") +
+  theme_classic()
+p.metamem.comp
+#import BRIEF and examine correlation across domains
+d.BRIEF.trim <- BRIEF %>% filter(BABS_ID %in% sub.IDs & BRIEF_Session == 1) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(-BRIEF_Session) %>% select(-Total)
+#BRIEF
+corr.BRIEF <- d.BRIEF.trim %>% select(-Subject) %>% correlation()
+corr.BRIEF %>%
+  summary(redundant = F) %>%
+  plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+BRIEF.comp <- d.BRIEF.trim %>% mutate(across(Init:WM, ~ c(scale(.))),
+                             BRIEF_comp = (Init + PO + WM + TM)*-1) %>% select(Subject, BRIEF_comp)
+#plot distribution of composite
+p.BRIEF.comp <- ggplot(BRIEF.comp, aes(BRIEF_comp)) +
+  geom_density() + 
+  labs(title = "BRIEF Composite") +
+  theme_classic()
+p.BRIEF.comp
+#combining metacog dataframes
+d.metacog.comp <- metamem.comp %>% inner_join(BRIEF.comp)
+corr.metacog.comp <- cor_test(d.metacog.comp, "BRIEF_comp", "metamem_comp")
+#correlating variables
+corr.metacog.comp
+plot(corr.metacog.comp) + theme_classic() + labs(x = "BRIEF (Exec Function) Composite", y = "Metamemory Composite")
+```
+
+## Testing for the associations between cognitive performance and self-reported metacognition
+
+```{r metacog_cog_lms, warning=FALSE, message=FALSE}
+d.cog.meta <- d.cog.comp %>% inner_join(d.metacog.comp)
+#relationship between cognitive function and self-reported executive function
+m.BRIEF.cog <- lm(data = d.cog.meta, BRIEF_comp ~ WM_comp + LM_comp)
+summary(m.BRIEF.cog)
+
+#relationship between cognitive function and self-reported memory
+m.metamem.cog <- lm(data = d.cog.meta, metamem_comp ~ WM_comp + LM_comp)
+summary(m.metamem.cog)
+```
+
+## Adding self-reported measures of depression and anxiety symptoms (as potential moderators)
+### Depression and anxiety symptom questionnaires: GDS, MSQ, PSWQ
+
+```{r anxdep_import, warning=FALSE, message=FALSE}
+#import GDS
+d.GDS.trim <- BABS.NP.sess1 %>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(Subject, GDS) %>% mutate(GDS = as.numeric(GDS))
+#import MASQ and examine correlation across domains
+d.MASQ.trim <- MASQ %>% filter(BABS_ID %in% sub.IDs & MASQ_Session == 1) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(-MASQ_Session)
+#MASQ
+corr.MASQ <- d.MASQ.trim %>% select(-Subject) %>% correlation()
+corr.MASQ %>%
+  summary(redundant = F) %>%
+  plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+MASQ.comp <- d.MASQ.trim %>% mutate(across(AA:GD, ~ c(scale(.))),
+                            MASQ_comp = AA + AD + GD) %>% select(Subject, MASQ_comp)
+#import PSWQ
+d.PSWQ.trim <- PSWQ %>% filter(BABS_ID %in% sub.IDs & PSWQ_Session == 1) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(-PSWQ_Session)
+
+#combine dataframes and examine correlation across questionnaires
+d.anxdep <- d.GDS.trim %>% inner_join(d.MASQ.trim) %>% inner_join(d.PSWQ.trim)
+corr.anxdep <- d.anxdep %>% select(-Subject) %>% correlation()
+corr.anxdep %>%
+  summary(redundant = F) %>%
+  plot() + ggplot2::theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+anxdep.comp <- d.anxdep %>% mutate(across(GDS:PSWQ, ~ c(scale(.))),
+                             anxdep_comp = GDS + AA + AD + GD + PSWQ) %>% select(Subject, anxdep_comp) %>% drop_na()
+#plot distribution of composite
+p.anxdep.comp <- ggplot(anxdep.comp, aes(anxdep_comp)) +
+  geom_density() + 
+  labs(title = "Anxiety and Depression Symptoms Composite") +
+  theme_classic()
+p.anxdep.comp
+```
+
+## Testing for the associations between cognitive performance and self-reported metacognition (with self-reported depression and anxiety symptoms)
+
+```{r metacog_cog_anx_deplms, warning=FALSE, message=FALSE}
+d.cog.meta.anx <- d.cog.meta %>% inner_join(anxdep.comp)
+#relationship between cognitive function and self-reported executive function
+m.BRIEF.cog.anx <- lm(data = d.cog.meta.anx, BRIEF_comp ~ WM_comp + anxdep_comp + LM_comp)
+summary(m.BRIEF.cog.anx)
+
+#relationship between cognitive function and self-reported memory
+m.metamem.cog.anx <- lm(data = d.cog.meta.anx, metamem_comp ~ WM_comp + anxdep_comp + LM_comp)
+summary(m.metamem.cog.anx)
+```
+
+## Testing for the associations between cognitive performance and self-reported metacognition on daily life actiivities
+
+```{r metacog_leq_deplms, warning=FALSE, message=FALSE}
+#import LEQ
+d.LEQ.trim <- BABS.NP.sess1 %>% filter(BABS_ID %in% sub.IDs) %>% mutate(Subject = parse_number(BABS_ID)) %>% select(-BABS_ID) %>% select(Subject, starts_with("LEQ")) %>% mutate_if(is.character, as.numeric) %>%
+  mutate(LEQ_YA_Spec_Total = (LEQ_YA_A + LEQ_YA_B)*1.05,
+         LEQ_YA_NonSpec_Total = LEQ_YA_C,
+         LEQ_YA_Total = LEQ_YA_Spec_Total + LEQ_YA_NonSpec_Total,
+         LEQ_MA_Spec_Total = (LEQ_MID_A = LEQ_MID_B)*0.25,
+         LEQ_MA_NonSpec_Total = LEQ_MID_D,
+         LEQ_MA_Total = LEQ_MA_Spec_Total + LEQ_MA_NonSpec_Total + (LEQ_MID_C*1.05),
+         LEQ_OA_Spec_Total = (LEQ_LATE_A*0.4),
+         LEQ_OA_NonSpec_Total = LEQ_LATE_C,
+         LEQ_OA_Total = LEQ_OA_Spec_Total + LEQ_OA_NonSpec_Total + (LEQ_LATE_B*1.05),
+         LEQ_Total = LEQ_YA_Total + LEQ_MA_Total + LEQ_OA_Total)
+d.cog.meta.LEQ <- d.cog.meta.anx %>% inner_join(d.LEQ.trim)
+#relationship between LEQ total and cognitive ability and self-reported metacognition
+m.LEQ.tot.cog <- lm(data = d.cog.meta.LEQ, LEQ_Total ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp)
+summary(m.LEQ.tot.cog)
+
+#relationship between daily activities (OA) and cognitive ability and self-reported metacognition
+m.LEQ.OA.cog <- lm(data = d.cog.meta.LEQ, LEQ_LATE_C ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp + LEQ_YA_B)
+summary(m.LEQ.OA.cog)
+
+#relationship between daily activities (MA) and cognitive ability and self-reported metacognition
+m.LEQ.MA.cog <- lm(data = d.cog.meta.LEQ, LEQ_MID_D ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp + LEQ_YA_B)
+summary(m.LEQ.MA.cog)
+
+#relationship between daily activities (OA) and cognitive ability and self-reported metacognition (added anxiety-depression sx comp)
+m.LEQ.OA.cog.anx <- lm(data = d.cog.meta.LEQ, LEQ_LATE_C ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp + anxdep_comp + LEQ_YA_B)
+summary(m.LEQ.OA.cog.anx)
+
+#relationship between daily activities (MA) and cognitive ability and self-reported metacognition (added anxiety-depression sx comp)
+m.LEQ.MA.cog.anx <- lm(data = d.cog.meta.LEQ, LEQ_MID_D ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp + anxdep_comp + LEQ_YA_B)
+summary(m.LEQ.MA.cog.anx)
+
+#social
+#relationship between daily social activities (OA) and cognitive ability and self-reported metacognition
+m.LEQ.OA.cog.soc <- lm(data = d.cog.meta.LEQ, LEQ_LATE_A ~ WM_comp + LM_comp + BRIEF_comp + metamem_comp + LEQ_YA_B)
+summary(m.LEQ.OA.cog.soc)
+```
