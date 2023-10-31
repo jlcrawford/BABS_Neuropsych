@@ -1,0 +1,256 @@
+---
+title: "BABS LEQ Summary"
+author: "JLC"
+date: "`r Sys.Date()`"
+output: "html_document"
+---
+
+# LEQ Summary (from BABS Qualtrics data entry)
+
+```{r setup, warning=FALSE, message=FALSE}
+rm(list=ls())
+#Import relevant packages
+library(kableExtra); library(psych); library(tabledown); library(tidyverse)
+
+# Import data
+LEQ.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/LEQ.csv"
+LEQ <-read.csv(LEQ.path, header = T) %>% select(starts_with("BABS"), starts_with("LEQ"),
+                                                starts_with("YA"), starts_with("MA"), starts_with("OA"),
+                                                starts_with("X"))
+LEQ.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/LEQ_sum.csv"
+```
+
+## Optional: Participant IDs for summarization
+
+```{r Sub_IDs, warning=FALSE, message=FALSE}
+# Enter all participants that you would like to summarize here)
+## This section can be commented out if you want to run all available participants
+sub.IDs<- c("BABS005", "BABS006","BABS008", "BABS024", "BABS004", "BABS007", "BABS009", "BABS010", "BABS011", "BABS012")
+
+#If you would like to create a summary using only a unique subset of participant IDs that you have supplied (in previous code chunk), you can simply add the following line of code to filter the raw data to the code above
+# LEQ %>% filter(BABS_ID %in% sub.IDs)
+```
+
+## Cleaning data and summarizing facets of the LEQ
+## Younger Age Range
+
+```{r LEQ_clean_YA, warning=FALSE, message=FALSE}
+#Creating clean data frame for summary
+#Section A: secondary education
+LEQ.YA.A <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), YA_elemEdu, YA_secondEdu) %>%
+  mutate(Elem_score = if_else(YA_elemEdu > 6, 1, 0),
+         Mid_score = if_else(YA_elemEdu == 8 | YA_secondEdu > 0, 4, 0),
+         High_score = if_else(YA_secondEdu > 2, 8, 0),
+         YA_A = if_else(High_score == 8, High_score, (if_else(Mid_score == 4, Mid_score, Elem_score)))) %>%
+  select(BABS_ID, LEQ_Session, YA_A)
+#Section B: post-secondary education
+LEQ.YA.B <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), contains("_YA_")) %>% 
+  mutate_all(funs(replace_na(.,0))) %>%
+  pivot_longer(names_to = "facet", values_to = "response", -c(BABS_ID, LEQ_Session)) %>%
+  separate_wider_delim(facet,"_", names = c("Category", "Age", "Edu"), too_many = "merge") %>% select(-Age) %>%
+  separate_wider_delim(Edu,"__", names = c(NA, "Facet")) %>% 
+  pivot_wider(id_cols = c("BABS_ID","LEQ_Session","Category"), names_from = "Facet", values_from = "response") %>%
+  mutate(Category = factor(Category, levels = c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10"),
+                           labels = c("Clerical","Business","Trades","OthTech","Assoc","Bach","Grad","PhD","OthGrad","Other")),
+         percent = percent/4,
+         Clerical_present = if_else(Category == "Clerical", 1, 0),
+         Clerical_score = if_else(Clerical_present == 0, 0, (if_else(yearsEnroll >1, percent*6, percent*4))),
+         Business_present = if_else(Category == "Business", 1, 0),
+         Business_score = if_else(Business_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Trades_present = if_else(Category == "Trades", 1, 0),
+         Trades_score = if_else(Trades_present == 0, 0, percent*8),
+         OthTech_present = if_else(Category == "OthTech", 1, 0),
+         OthTech_score = if_else(OthTech_present == 0, 0, percent*6),
+         Assoc_present = if_else(Category == "Assoc", 1, 0),
+         Assoc_score = if_else(Assoc_present == 0, 0, percent*8),
+         Bach_present = if_else(Category == "Bach", 1, 0),
+         Bach_score = if_else(Bach_present == 0, 0, percent*10),
+         Grad_present = if_else(Category == "Grad", 1, 0),
+         Grad_score = if_else(Grad_present == 0, 0, percent*8),
+         PhD_present = if_else(Category == "PhD", 1, 0),
+         PhD_score = if_else(PhD_present == 0, 0, percent*10),
+         OtherGrad_present = if_else(Category == "OthGrad", 1, 0),
+         OtherGrad_score = if_else(OtherGrad_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Other_present = if_else(Category == "Other", 1, 0),
+         Other_score = if_else(Other_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8)))))) %>% select(BABS_ID, LEQ_Session, ends_with("_score")) %>%
+  pivot_longer(cols = ends_with("_score"), names_to = "Facet", values_to = "Score") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(YA_B = sum(Score))
+#Section C: Activities
+LEQ.YA.C <- LEQ %>% select(BABS_ID, LEQ_Session, starts_with("YA_act")) %>%
+  mutate(travelCount = str_count(YA_act__travel, "\\d+"),
+         YA_act__travel = factor(travelCount, levels = c(0,1,2,3,4,5,6,7,8), labels = c(0,1,1,2,2,3,4,4,5)),
+         YA_act__travel = as.numeric(as.character(YA_act__travel))) %>% 
+  select(-travelCount) %>%
+  pivot_longer(cols = starts_with("YA_act"),names_to = "Activity",values_to = "Score") %>%
+  mutate_all(funs(replace_na(.,0))) %>%
+  filter(Activity != "YA_act__mild" & Activity != "YA_act__moderate" & Activity != "YA_act__vigorous") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(YA_C = sum(Score))
+LEQ.YA <- inner_join(LEQ.YA.A, LEQ.YA.B, by = c("BABS_ID","LEQ_Session")) %>% 
+  inner_join(LEQ.YA.C, by = c("BABS_ID","LEQ_Session")) %>%
+  mutate(YA_Spec = (YA_A + YA_B)*1.05,
+         YA_NonSpec = YA_C,
+         YA_Total = YA_Spec + YA_NonSpec)
+```
+
+## Middle Age Range
+
+```{r LEQ_clean_MA, warning=FALSE, message=FALSE}
+#Creating clean data frame for summary
+#Section A: occupation
+LEQ.MA.A <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), starts_with("MA_job_")) %>%
+  pivot_longer(cols = starts_with("MA"), names_to = "Age", values_to = "Value") %>%
+  mutate(Score = factor(Value, levels = c(1,2,3,4,5,6,7,8,9,10,11), labels = c(10,9,8,7,6,5,4,3,2,1,1)),
+         Score = as.numeric(as.character(Score))) %>% group_by(BABS_ID, LEQ_Session) %>%
+  summarise(MA_A = sum(Score, na.rm = T))
+#Section B: managerial role
+LEQ.MA.B <- LEQ %>% select(BABS_ID, LEQ_Session, starts_with("MA_jobManage")) %>%
+  pivot_longer(cols = starts_with("MA"), names_to = "Age", values_to = "Value") %>% group_by(BABS_ID, LEQ_Session) %>%
+  replace(is.na(.), 1) %>%
+  summarise(maxValue = max(Value, na.rm = T)) %>%
+  mutate(MA_B = factor(maxValue, levels = c(1,2,3,4), labels = c(8,16,24,32)),
+         MA_B = as.numeric(as.character(MA_B))) %>% select(-maxValue)
+#Section C: continuing education
+LEQ.MA.C <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), contains("_MA_")) %>% 
+  mutate_all(funs(replace_na(.,0))) %>%
+  pivot_longer(names_to = "facet", values_to = "response", -c(BABS_ID, LEQ_Session)) %>%
+  separate_wider_delim(facet,"_", names = c("Category", "Age", "Edu"), too_many = "merge") %>% select(-Age) %>%
+  separate_wider_delim(Edu,"__", names = c(NA, "Facet")) %>% 
+  pivot_wider(id_cols = c("BABS_ID","LEQ_Session","Category"), names_from = "Facet", values_from = "response") %>%
+  mutate(Category = factor(Category, levels = c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10"),
+                           labels = c("Clerical","Business","Trades","OthTech","Assoc","Bach","Grad","PhD","OthGrad","Other")),
+         percent = percent/4,
+         Clerical_present = if_else(Category == "Clerical", 1, 0),
+         Clerical_score = if_else(Clerical_present == 0, 0, (if_else(yearsEnroll >1, percent*6, percent*4))),
+         Business_present = if_else(Category == "Business", 1, 0),
+         Business_score = if_else(Business_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Trades_present = if_else(Category == "Trades", 1, 0),
+         Trades_score = if_else(Trades_present == 0, 0, percent*8),
+         OthTech_present = if_else(Category == "OthTech", 1, 0),
+         OthTech_score = if_else(OthTech_present == 0, 0, percent*6),
+         Assoc_present = if_else(Category == "Assoc", 1, 0),
+         Assoc_score = if_else(Assoc_present == 0, 0, percent*8),
+         Bach_present = if_else(Category == "Bach", 1, 0),
+         Bach_score = if_else(Bach_present == 0, 0, percent*10),
+         Grad_present = if_else(Category == "Grad", 1, 0),
+         Grad_score = if_else(Grad_present == 0, 0, percent*8),
+         PhD_present = if_else(Category == "PhD", 1, 0),
+         PhD_score = if_else(PhD_present == 0, 0, percent*10),
+         OtherGrad_present = if_else(Category == "OthGrad", 1, 0),
+         OtherGrad_score = if_else(OtherGrad_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Other_present = if_else(Category == "Other", 1, 0),
+         Other_score = if_else(Other_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8)))))) %>% select(BABS_ID, LEQ_Session, ends_with("_score")) %>%
+  pivot_longer(cols = ends_with("_score"), names_to = "Facet", values_to = "Score") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(MA_C = sum(Score))
+#Section D: Activities
+LEQ.MA.D <- LEQ %>% select(BABS_ID, LEQ_Session, starts_with("MA_act")) %>%
+  mutate(travelCount = str_count(MA_act__travel, "\\d+"),
+         MA_act__travel = factor(travelCount, levels = c(0,1,2,3,4,5,6,7,8), labels = c(0,1,1,2,2,3,4,4,5)),
+         MA_act__travel = as.numeric(as.character(MA_act__travel))) %>% 
+  select(-travelCount) %>%
+  pivot_longer(cols = starts_with("MA_act"),names_to = "Activity",values_to = "Score") %>%
+  mutate_all(funs(replace_na(.,0))) %>%
+  filter(Activity != "MA_act__mild" & Activity != "MA_act__moderate" & Activity != "MA_act__vigorous") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(MA_D = sum(Score))
+LEQ.MA <- inner_join(LEQ.MA.A, LEQ.MA.B, by = c("BABS_ID","LEQ_Session")) %>% 
+  inner_join(LEQ.MA.C, by = c("BABS_ID","LEQ_Session")) %>% inner_join(LEQ.MA.D, by = c("BABS_ID","LEQ_Session")) %>%
+  mutate(MA_Spec = (MA_A + MA_B)*0.25,
+         MA_NonSpec = MA_D,
+         MA_Total = MA_Spec + MA_NonSpec + MA_C)
+```
+
+## Older Age Range
+
+```{r LEQ_clean_OA, warning=FALSE, message=FALSE}
+#Creating clean data frame for summary
+#Section A: social
+LEQ.OA.A <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), starts_with("OA_social_")) %>%
+  replace(is.na(.), 0) %>%
+  mutate(eventCount = str_count(OA_social__entertain, "\\d+"),
+         activityCount = str_count(OA_social__typDay, "\\d+"),
+         infoCount = str_count(OA_social__info, "\\d+"),
+         readingCount = str_count(OA_social__reading, "\\d+"),
+         resideScore = if_else(OA_social__livingarr == 1, 1, 5),
+         socialScore = if_else(OA_social__clubCount == 0, 1, if_else(OA_social__clubCount < 3, 2, if_else(OA_social__clubCount < 5, 3, if_else(OA_social__clubCount < 7, 4, 5)))),
+         charityScore = if_else(OA_social__charCount == 0, 1, if_else(OA_social__charCount < 3, 2, if_else(OA_social__charCount < 5, 3, if_else(OA_social__charCount < 7, 4, 5)))),
+         outingScore = OA_social__outings,
+         eventScore =  if_else(eventCount == 0, 0, if_else(eventCount < 3, 1, if_else(eventCount < 5, 2, if_else(eventCount == 5, 3, if_else(eventCount < 7, 4, 5))))),
+         activityScore = if_else(activityCount < 3, 0, if_else(activityCount < 5, 1, if_else(activityCount < 7, 2, if_else(activityCount == 7, 3, if_else(activityCount == 8, 4, if_else(activityCount == 9, 5, if_else(activityCount == 10, 6, if_else(activityCount == 11, 7, if_else(activityCount == 12, 8, if_else(activityCount > 13, 10, 9)))))))))),
+         infoScore = if_else(infoCount == 0, 1, if_else(infoCount == 1, 1, if_else(infoCount < 4, 2, if_else(infoCount == 4, 3, if_else(infoCount == 5, 4, 5))))),
+         readingScore = if_else(OA_social__reading == 1, 0, if_else(readingCount == 1, 1, if_else(readingCount < 4, 2, if_else(readingCount == 4, 3, if_else(readingCount == 5, 4, 5)))))) %>%
+  select(BABS_ID, LEQ_Session, ends_with("Score")) %>%
+  pivot_longer(cols = ends_with("Score"), names_to = "Facet", values_to = "Score") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(OA_A = sum(Score, na.rm = T))
+#Section B: continuing education
+LEQ.OA.B <- LEQ %>% select(starts_with("BABS"), starts_with("LEQ"), contains("_OA_")) %>% 
+  mutate_all(funs(replace_na(.,0))) %>%
+  pivot_longer(names_to = "facet", values_to = "response", -c(BABS_ID, LEQ_Session)) %>%
+  separate_wider_delim(facet,"_", names = c("Category", "Age", "Edu"), too_many = "merge") %>% select(-Age) %>%
+  separate_wider_delim(Edu,"__", names = c(NA, "Facet")) %>% 
+  pivot_wider(id_cols = c("BABS_ID","LEQ_Session","Category"), names_from = "Facet", values_from = "response") %>%
+  mutate(Category = factor(Category, levels = c("X1","X2","X3","X4","X5","X6","X7","X8","X9","X10"),
+                           labels = c("Clerical","Business","Trades","OthTech","Assoc","Bach","Grad","PhD","OthGrad","Other")),
+         percent = percent/4,
+         Clerical_present = if_else(Category == "Clerical", 1, 0),
+         Clerical_score = if_else(Clerical_present == 0, 0, (if_else(yearsEnroll >1, percent*6, percent*4))),
+         Business_present = if_else(Category == "Business", 1, 0),
+         Business_score = if_else(Business_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Trades_present = if_else(Category == "Trades", 1, 0),
+         Trades_score = if_else(Trades_present == 0, 0, percent*8),
+         OthTech_present = if_else(Category == "OthTech", 1, 0),
+         OthTech_score = if_else(OthTech_present == 0, 0, percent*6),
+         Assoc_present = if_else(Category == "Assoc", 1, 0),
+         Assoc_score = if_else(Assoc_present == 0, 0, percent*8),
+         Bach_present = if_else(Category == "Bach", 1, 0),
+         Bach_score = if_else(Bach_present == 0, 0, percent*10),
+         Grad_present = if_else(Category == "Grad", 1, 0),
+         Grad_score = if_else(Grad_present == 0, 0, percent*8),
+         PhD_present = if_else(Category == "PhD", 1, 0),
+         PhD_score = if_else(PhD_present == 0, 0, percent*10),
+         OtherGrad_present = if_else(Category == "OthGrad", 1, 0),
+         OtherGrad_score = if_else(OtherGrad_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8))))),
+         Other_present = if_else(Category == "Other", 1, 0),
+         Other_score = if_else(Other_present == 0, 0, (if_else(yearsEnroll <1, percent*4, 
+                                                                     (if_else(yearsEnroll <2, percent*6, percent*8)))))) %>% select(BABS_ID, LEQ_Session, ends_with("_score")) %>%
+  pivot_longer(cols = ends_with("_score"), names_to = "Facet", values_to = "Score") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(OA_B = sum(Score))
+#Section C: Activities
+LEQ.OA.C <- LEQ %>% select(BABS_ID, LEQ_Session, starts_with("OA_act")) %>%
+  mutate(travelCount = str_count(OA_act__travel, "\\d+"),
+         OA_act__travel = factor(travelCount, levels = c(0,1,2,3,4,5,6,7,8), labels = c(0,1,1,2,2,3,4,4,5)),
+         OA_act__travel = as.numeric(as.character(OA_act__travel))) %>% 
+  select(-travelCount) %>% select(-starts_with("OA_act__time")) %>%
+  pivot_longer(cols = starts_with("OA_act"),names_to = "Activity",values_to = "Score") %>%
+  mutate_all(funs(replace_na(.,0))) %>%
+  filter(Activity != "OA_act__mild" & Activity != "OA_act__moderate" & Activity != "OA_act__vigorous") %>%
+  group_by(BABS_ID, LEQ_Session) %>%
+  summarise(OA_C = sum(Score))
+LEQ.OA <- inner_join(LEQ.OA.A, LEQ.OA.B, by = c("BABS_ID","LEQ_Session")) %>% 
+  inner_join(LEQ.OA.C, by = c("BABS_ID","LEQ_Session")) %>% 
+  mutate(OA_Spec = OA_A*0.4,
+         OA_NonSpec = OA_C,
+         OA_Total = OA_Spec + OA_NonSpec + OA_B)
+```
+
+## Combining data frames to create one LEQ summary
+
+```{r LEQ_sum, warning=FALSE, message=FALSE}
+#data frame with summary items
+LEQ.sum <- inner_join(LEQ.YA, LEQ.MA, by = c("BABS_ID","LEQ_Session")) %>% 
+  inner_join(LEQ.OA, by = c("BABS_ID","LEQ_Session"))
+#to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
+#write.csv(LEQ.sum, file = LEQ.output.path, row.names = F)
+```

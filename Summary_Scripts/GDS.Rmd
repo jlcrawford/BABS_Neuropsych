@@ -1,0 +1,93 @@
+---
+title: "BABS GDS Summary"
+author: "JLC"
+date: "`r Sys.Date()`"
+output: "html_document"
+---
+
+# GDS Summary (from BABS Qualtrics data entry)
+
+```{r setup, warning=FALSE, message=FALSE}
+rm(list=ls())
+#Import relevant packages
+library(kableExtra); library(psych); library(tidyverse)
+
+# Import data
+GDS.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/GDS.csv"
+GDS <-read.csv(GDS.path, header = T) %>% select(BABS_ID, starts_with("GDS")) %>%
+  group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
+GDS.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/GDS_imputed_sum.csv"
+```
+
+## Optional: Participant IDs for summarization
+
+```{r Sub_IDs, warning=FALSE, message=FALSE}
+# Enter all participants that you would like to summarize here)
+## This section can be commented out if you want to run all available participants
+sub.IDs<- c("BABS005", "BABS006","BABS008", "BABS024")
+```
+
+## Cleaning data frame for summary
+
+```{r GDS_clean, warning=FALSE, message=FALSE}
+#Creating clean data frame for summary
+GDS.clean <- GDS %>% pivot_longer(names_to = "Item", values_to = "Value", -c(BABS_ID, GDS_Session)) %>%
+  select(BABS_ID, GDS_Session, Item, Value)
+
+#If you would like to create a summary using only a unique subset of participant IDs that you have supplied (in previous code chunk), you can simply add the following line of code to filter the raw data to the code above
+# %>% filter(BABS_ID %in% sub.IDs)
+```
+
+## Counting the number of missing responses & imputing missing data
+### Participants missing > 20% of their data for a given scale will be removed (threshold can be edited for your own purposes)
+
+```{r GDS_impute, warning=FALSE, message=FALSE}
+#creating data frame that summarizes the amount of missing data per (sub)scale for each participant
+GDS.missing.sum <- GDS.clean %>% group_by(BABS_ID, GDS_Session) %>%
+  summarise(count.missing = sum(is.na(Value)),
+            count.response = sum(!is.na(Value))) %>%
+  mutate(total = count.missing + count.response,
+         prop.missing = count.missing/total,
+         flag.missing = if_else(prop.missing > 0.2, 1, 0)) %>%
+  filter(flag.missing == 0)
+GDS.missing.sum.tbl <- GDS.missing.sum %>% filter(prop.missing != 0)
+#printing table with the missing data summary
+kable(GDS.missing.sum.tbl) %>% kable_styling()
+#creating data frame with *only* participants who have acceptable amounts of missing data (i.e., < 20% missing)
+GDS.clean.IDs <- GDS.missing.sum %>% ungroup() %>% select(BABS_ID, GDS_Session) %>% group_by(BABS_ID, GDS_Session) %>% distinct()
+#New data frame with imputed data (using median of the subscale values)
+GDS.clean.imputed <- inner_join(GDS.clean, GDS.clean.IDs) %>% group_by(BABS_ID, GDS_Session) %>%
+  mutate(median_subscale = round(median(Value, na.rm = T), digits = 0),
+         Imputed.Value = if_else(is.na(Value), median_subscale, Value)) %>% ungroup() %>%
+  select(BABS_ID, GDS_Session, Imputed.Value)
+```
+
+## Creating GDS-Specific Summary Scores with Imputed Values
+
+```{r GDS_sum, warning=FALSE, message=FALSE}
+#data frame with summary items
+GDS.sum <- GDS.clean.imputed %>% group_by(BABS_ID, GDS_Session) %>%
+  summarise(GDS = sum(Imputed.Value))
+#to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
+#write.csv(GDS.sum, file = GDS.output.path, row.names = F)
+```
+
+### Descriptive summary of GDS responses (imputed sample)
+
+```{r GDS_desc_sum, warning=FALSE, message=FALSE}
+#counting the number of observations and summarizing mean & SD
+GDS.desc.sum <- GDS.sum %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
+  filter(Variable != "BABS_ID*") %>% filter(Variable != "GDS_Session")
+
+kable(GDS.desc.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
+      caption = "GDS Summary Table") %>% kable_styling()
+#creating long data frame
+d.GDS.long <- GDS.sum %>% 
+  pivot_longer(names_to = "Facet", values_to = "Score", -c(BABS_ID, GDS_Session))
+#plotting distribution of scores
+p.GDS <- ggplot(d.GDS.long, aes(Score)) +
+  geom_bar() + 
+  labs(title = "GDS Scores in BABS Sample") +
+  theme_classic() + facet_wrap(.~ Facet)
+p.GDS
+```
