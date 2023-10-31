@@ -250,7 +250,8 @@ LEQ.OA <- inner_join(LEQ.OA.A, LEQ.OA.B, by = c("BABS_ID","LEQ_Session")) %>%
 ```{r LEQ_sum, warning=FALSE, message=FALSE}
 #data frame with summary items
 LEQ.sum <- inner_join(LEQ.YA, LEQ.MA, by = c("BABS_ID","LEQ_Session")) %>% 
-  inner_join(LEQ.OA, by = c("BABS_ID","LEQ_Session"))
+  inner_join(LEQ.OA, by = c("BABS_ID","LEQ_Session")) %>%
+  mutate(LEQ_Total = YA_Total + MA_Total + OA_Total)
 #to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
 #write.csv(LEQ.sum, file = LEQ.output.path, row.names = F)
 ```
