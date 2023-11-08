@@ -1,0 +1,72 @@
+---
+title: "BABS Neuropsych Validation"
+author: "JLC"
+date: "`r Sys.Date()`"
+output: "html_document"
+---
+
+# Compare the values entered in Qualtrics for double validation
+
+```{r setup, warning=FALSE, message=FALSE}
+rm(list=ls())
+
+# Packages
+library(knitr); library(kableExtra); library(psych); library(tidyverse)
+
+#Create data directories
+Qualtrics.1.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/Error_Checking/BABS_Behavioral_Data_Initial_Entry.csv"
+Qualtrics.2.path <-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/Error_Checking/BABS_Behavioral_Data_Second_Entry.csv"
+
+#Make data frames for neuropsych battery items
+BABS.NP.qualtrics.1 <- read.csv(Qualtrics.1.path, header = T)
+BABS.NP.qualtrics.2 <- read.csv(Qualtrics.2.path, header = T)
+```
+
+## Table summarizing values that are different across both Qualtrics entries
+### Qualtrics_1_Score = first score entered into Qualtrics; Qualtrics_2_Score = second score entered into Qualtrics
+
+```{r compare, warning=FALSE, message=FALSE}
+#data from first entry
+colnames.Qualtrics <- c("BABS_ID","Session","MMSE","DigitSpan_Forward","DigitSpan_Backward",
+                       "Stroop_Word__Corr","Stroop_Word_Incorr","Stroop_Color__Corr","Stroop_Color__Incorr",
+                       "Stroop_ColorWord__Corr","Stroop_ColorWord__Incorr","WMS_VR1","WMS_VR2","WMS_Recog",
+                       "CVLT_listA__Trial1","CVLT_listA__Trial2","CVLT_listA__Trial3","CVLT_listA__Trial4",
+                       "CVLT_listA__Trial5","CVLT_listB","CVLT_SD__FR","CVLT_SD__CR","CVLT_LD__FR","CVLT_LD__CR",
+                       "CVLT_int__FR","CVLT_int__CR","CVLT_rep","CVLT_recog__Hit","CVLT_recog__FA")
+BABS.NP.qualtrics.clean <- BABS.NP.qualtrics.1 %>% select(BABS_ID, Session, MMSE, starts_with("Digit"),
+                                      starts_with("Stroop"), starts_with("WMS"), starts_with("CVLT")) 
+colnames(BABS.NP.qualtrics.clean) <- colnames.Qualtrics
+BABS.NP.qualtrics.clean <- BABS.NP.qualtrics.clean %>%
+  mutate(numID = parse_number(BABS_ID),
+         numID = str_pad(numID, 3, pad = "0"),
+         BABS_ID = paste0("BABS",numID)) %>% select(-numID) %>%
+   pivot_longer(values_to = "Qualtrics_1_Score", names_to = "Metric", -c(BABS_ID, Session)) %>% na.omit
+#data from second entry
+colnames.Qualtrics.2 <- c("BABS_ID","Session","Adjudicated","MMSE","DigitSpan_Forward","DigitSpan_Backward",
+                       "Stroop_Word__Corr","Stroop_Word_Incorr","Stroop_Color__Corr","Stroop_Color__Incorr",
+                       "Stroop_ColorWord__Corr","Stroop_ColorWord__Incorr","WMS_VR1","WMS_VR2","WMS_Recog",
+                       "CVLT_listA__Trial1","CVLT_listA__Trial2","CVLT_listA__Trial3","CVLT_listA__Trial4",
+                       "CVLT_listA__Trial5","CVLT_listB","CVLT_SD__FR","CVLT_SD__CR","CVLT_LD__FR","CVLT_LD__CR",
+                       "CVLT_int__FR","CVLT_int__CR","CVLT_rep","CVLT_recog__Hit","CVLT_recog__FA")
+BABS.NP.qualtrics.2.clean <- BABS.NP.qualtrics.2 %>% select(BABS_ID, Session, Adjudicated, MMSE, starts_with("Digit"),
+                                      starts_with("Stroop"), starts_with("WMS"), starts_with("CVLT")) 
+colnames(BABS.NP.qualtrics.2.clean) <- colnames.Qualtrics.2
+BABS.NP.qualtrics.2.clean <- BABS.NP.qualtrics.2.clean %>%
+   pivot_longer(values_to = "Qualtrics_2_Score", names_to = "Metric", -c(BABS_ID, Session,Adjudicated)) %>% na.omit
+
+d.compare <- inner_join(BABS.NP.qualtrics.clean, BABS.NP.qualtrics.2.clean, by = c("BABS_ID","Session","Metric")) %>%
+  mutate(sameValue = if_else(Qualtrics_1_Score == Qualtrics_2_Score, 1, 0))
+t.compare <- d.compare %>% filter(sameValue == 0) %>% filter(Adjudicated != 1) %>% select(-sameValue) %>% select(-Adjudicated)
+kable(t.compare) %>% kable_styling()
+```
+
+## Write out validated values to CSV
+
+```{r writeCSV, message=FALSE, warning=FALSE}
+d.finalCSV <- d.compare %>%
+  mutate(includeFinal = if_else((sameValue == 1 | Adjudicated == 1), 1, 0)) %>%
+  filter(includeFinal == 1) %>% rename(Score = Qualtrics_2_Score) %>%
+  select(BABS_ID, Session, Metric, Score)
+out.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS_Neuropsych_Data_Validated.csv"
+#write.csv(d.finalCSV, file = out.path, row.names = F)
+```

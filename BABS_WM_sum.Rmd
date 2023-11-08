@@ -16,7 +16,7 @@ rm(list=ls())
 library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(see); library(readxl); library(psych); library(tidyverse)
 
 #Create data directories
-NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
+NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS_Neuropsych_Data_Validated.csv"
 sess.path <-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/"
 
 #Make data frames for neuropsych battery items from excel spreadsheet

@@ -13,7 +13,7 @@ rm(list=ls())
 library(kableExtra); library(psych); library(tidyverse)
 
 # Import data
-GDS.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/GDS.csv"
+GDS.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/GDS_raw.csv"
 GDS <-read.csv(GDS.path, header = T) %>% select(BABS_ID, starts_with("GDS")) %>%
   group_by(BABS_ID) %>% mutate_if(is.character, as.integer) %>% ungroup()
 GDS.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/GDS_imputed_sum.csv"
@@ -32,7 +32,10 @@ sub.IDs<- c("BABS005", "BABS006","BABS008", "BABS024")
 ```{r GDS_clean, warning=FALSE, message=FALSE}
 #Creating clean data frame for summary
 GDS.clean <- GDS %>% pivot_longer(names_to = "Item", values_to = "Value", -c(BABS_ID, GDS_Session)) %>%
-  select(BABS_ID, GDS_Session, Item, Value)
+  select(BABS_ID, GDS_Session, Item, Value) %>%
+  mutate(numID = parse_number(BABS_ID),
+         numID = str_pad(numID, 3, pad = "0"),
+         BABS_ID = paste0("BABS",numID)) %>% select(-numID)
 
 #If you would like to create a summary using only a unique subset of participant IDs that you have supplied (in previous code chunk), you can simply add the following line of code to filter the raw data to the code above
 # %>% filter(BABS_ID %in% sub.IDs)

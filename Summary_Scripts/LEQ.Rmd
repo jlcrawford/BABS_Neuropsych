@@ -13,10 +13,13 @@ rm(list=ls())
 library(kableExtra); library(psych); library(tabledown); library(tidyverse)
 
 # Import data
-LEQ.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/LEQ.csv"
+LEQ.path <- "/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/Qualtrics_Surveys/LEQ_raw.csv"
 LEQ <-read.csv(LEQ.path, header = T) %>% select(starts_with("BABS"), starts_with("LEQ"),
                                                 starts_with("YA"), starts_with("MA"), starts_with("OA"),
-                                                starts_with("X"))
+                                                starts_with("X")) %>%
+                                      mutate(numID = parse_number(BABS_ID),
+                                      numID = str_pad(numID, 3, pad = "0"),
+                                      BABS_ID = paste0("BABS",numID)) %>% select(-numID)
 LEQ.output.path <- "~/Library/CloudStorage/Box-Box/BABS_Neuropsych/Data/LEQ_sum.csv"
 ```
 
@@ -253,5 +256,5 @@ LEQ.sum <- inner_join(LEQ.YA, LEQ.MA, by = c("BABS_ID","LEQ_Session")) %>%
   inner_join(LEQ.OA, by = c("BABS_ID","LEQ_Session")) %>%
   mutate(LEQ_Total = YA_Total + MA_Total + OA_Total)
 #to save the results, un-comment the line below; file path & name can be adjusted in the first code chunk
-#write.csv(LEQ.sum, file = LEQ.output.path, row.names = F)
+write.csv(LEQ.sum, file = LEQ.output.path, row.names = F)
 ```

@@ -15,12 +15,11 @@ rm(list=ls())
 library(knitr); library(kableExtra); library(RColorBrewer); library(correlation); library(readxl); library(psych); library(ds4psy); library(tidyverse)
 
 #Create data directories
-NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS NP MASTER.xlsx"
+NP.path<-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/Analysis/BABS_Neuropsych_Data_Validated.csv"
 subj.path <-"/Volumes/berry-lab/berry-lab/Brandeis_Aging_Brain_Study/BABS Data/"
 
 #Make data frames for neuropsych battery items from excel spreadsheet
-BABS.NP.demo <- read_xlsx(NP.path, sheet = "Demographics")
-BABS.NP.sess1 <- read_xlsx(NP.path, sheet = "Session 1")
+BABS.NP.sess1 <- read.csv(NP.path, header = T)
 
 #Make data frame for NIH toolbox data
 sub.IDs <- c("BABS178","BABS182","BABS184","BABS186","BABS187","BABS188","BABS189","BABS190","BABS191","BABS192",
@@ -55,11 +54,11 @@ d.NIH <- NIH.toolbox.path %>%
 
 ```{r MMSE, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.MMSE <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, MMSE) %>% distinct(BABS_ID, .keep_all = T) %>%
+d.MMSE <- BABS.NP.sess1 %>% select(BABS_ID, MMSE) %>% distinct(BABS_ID, .keep_all = T) %>%
     mutate_at(vars(starts_with("MMSE")), as.numeric)
 #counting the number of observations and summarizing mean & SD
 MMSE.sum <- d.MMSE %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+  filter(Variable != "BABS_ID*")
 
 kable(MMSE.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "MMSE Summary Table") %>% kable_styling()
@@ -74,21 +73,20 @@ p.MMSE
 ## Working Memory {.tabset}
 ### Digit Span
 #### Forward
-Note: BABS_259 has forward value of "8 or 7"; presently excluded for being non-numeric. Verify actual score.
 
 ```{r DigSpan_for, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.DigSpan.F <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_FORWARD) %>%
+d.DigSpan.F <- BABS.NP.sess1 %>% select(BABS_ID, DigitSpan_Forward) %>%
                                           distinct(BABS_ID, .keep_all = T) %>%
-    mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
+    mutate_at(vars(starts_with("Digit")), as.numeric)
 #counting the number of observations and summarizing mean & SD
 DigSpan.F.sum <- d.DigSpan.F %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+  filter(Variable != "BABS_ID*")
 
 kable(DigSpan.F.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Forward Digit Span Summary Table") %>% kable_styling()
 #plotting distribution of scores
-p.DigSpan.F <- ggplot(d.DigSpan.F, aes(DIGITSPAN_FORWARD)) +
+p.DigSpan.F <- ggplot(d.DigSpan.F, aes(DigitSpan_Forward)) +
   geom_bar() + scale_x_continuous(limits = c(2,15), breaks = seq(2,14,1)) +
   labs(title = "Forward Digit Span Scores in BABS Sample") +
   theme_classic()
@@ -96,21 +94,20 @@ p.DigSpan.F
 ```
 
 #### Backward
-Note: BABS_220 has value of "71"; BABS_139 has score of 19; BABS_280 has score of 16. BABS_259 has forward value of "5 or 6" Verify actual scores. Digit span I have used in the past has a max score of 14/domain; double-check range used in BABS. Also, there are currently a different number of observations for forward and backward scores, which needs to be investigated.
 
 ```{r DigSpan_back, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
-d.DigSpan.B <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, DIGITSPAN_BACKWARD) %>%
+d.DigSpan.B <- BABS.NP.sess1 %>% select(BABS_ID, DigitSpan_Backward) %>%
                                           distinct(BABS_ID, .keep_all = T) %>%
-  mutate_at(vars(starts_with("DIGITSPAN")), as.numeric)
+  mutate_at(vars(starts_with("Digit")), as.numeric)
 #counting the number of observations and summarizing mean & SD
 DigSpan.B.sum <- d.DigSpan.B %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
+  filter(Variable != "BABS_ID*")
 
 kable(DigSpan.B.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Backward Digit Span Summary Table") %>% kable_styling()
 #plotting distribution of scores
-p.DigSpan.B <- ggplot(d.DigSpan.B, aes(DIGITSPAN_BACKWARD)) +
+p.DigSpan.B <- ggplot(d.DigSpan.B, aes(DigitSpan_Backward)) +
   geom_bar() + scale_x_continuous(limits = c(2,15), breaks = seq(2,14,1)) +
   labs(title = "Backward Digit Span Scores in BABS Sample") +
   theme_classic()
@@ -118,7 +115,6 @@ p.DigSpan.B
 ```
 
 ### Keep Track Task
-Note: Will need to verify what happened here; early Ss have 1 (not 4) category, but later have 4 (not 1). Inconsistent number of observations across conditions.
 
 ```{r KeepTrack, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -144,7 +140,6 @@ p.KeepTrack
 ```
 
 ### Spatial N-Back
-Note: Different number of observations across 1- and 2-back. Need to think about whether we want to use these results; pattern of results is highly consistent with OAs not understanding the directions initially, with better performance for 2- vs. 1-back (plotted below).
 
 ```{r NBack, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -186,7 +181,6 @@ fig.Nback
 
 ## Inhibition {.tabset}
 ### Stroop (Paper version)
-Note: Inconsistent number of participants across conditions.
 
 ```{r Stroop_paper, warning=FALSE, message=FALSE}
 #creating data frame with relevant variables
@@ -302,7 +296,6 @@ p.CRT
 
 ## Learning and Memory {.tabset}
 ### California Verbal Learning Test (CVLT)
-Note: Should look into _REPETITIONS scores; ranges 0-49, but the mean is ~4.
 
 ```{r CVLT, warning=FALSE, message=FALSE}
 d.CVLT <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("CVLT")) %>%
@@ -357,7 +350,6 @@ p.WMS
 
 ## Fluid Intelligence {.tabset}
 ### WASI-II Matrix Reasoning
-Note: Also, need to look up the range of acceptable scores to verify values.
 
 ```{r MatrixReason, warning=FALSE, message=FALSE}
 d.matrix <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, WASI_MATRIX_SCORE) %>%
@@ -379,7 +371,6 @@ p.matrix
 
 ## Creativity {.tabset}
 ### Remote Associates Test
-Note: Stopped administration after BABS_173. All values fall in allowable range (0-12).
 
 ```{r RemoteAssoc, warning=FALSE, message=FALSE}
 d.remoteAssoc <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, REMOTE_ASSOCIATES) %>%
@@ -397,27 +388,6 @@ p.remoteAssoc <- ggplot(d.remoteAssoc, aes(REMOTE_ASSOCIATES)) +
   labs(title = "Remote Associates Scores in BABS Sample") +
   theme_classic()
 p.remoteAssoc
-```
-
-### Alternative Uses Task
-Note: Unscored measure.
-
-```{r AltUse, warning=FALSE, message=FALSE}
-d.altUse <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, ALTERTIVE_USES) %>%
-                                          distinct(BABS_ID, .keep_all = T) %>%
-   mutate_at(vars(starts_with("ALT")), as.numeric)
-#counting the number of observations and summarizing mean & SD
-altUses.sum <- d.altUse %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
-
-kable(altUses.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
-      caption = "Alternative Uses Summary Table") %>% kable_styling()
-#plotting distribution of scores
-p.altUse <- ggplot(d.altUse, aes(ALTERTIVE_USES)) +
-  geom_bar() + 
-  labs(title = "Alternative Uses Scores in BABS Sample") +
-  theme_classic()
-p.altUse
 ```
 
 ## Crystalized Intelligence {.tabset}
@@ -487,24 +457,8 @@ kable(LEQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean",
       caption = "LEQ Summary Table") %>% kable_styling()
 ```
 
-### BABS Physical Activities Questionnaire
-Note: Unclear to me what this instrument is.
-
-```{r PhysActivity, warning=FALSE, message=FALSE}
-d.physAct <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("PHYSICAL_ACT")) %>%
-                                          distinct(BABS_ID, .keep_all = T) %>%
-  mutate_at(vars(starts_with("PHYSICAL_ACT")), as.numeric)
-#counting the number of observations and summarizing mean & SD
-physAct.sum <- d.physAct %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
-
-kable(physAct.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
-      caption = "Physical Activity Summary Table") %>% kable_styling()
-```
-
 ## Depressive and Anxious Traits {.tabset}
 ### Geriatric Depression Questionnaire (GDS)
-Allowable range is 0-30 (integers only). The following participants have scores that are not integers: BABS106 (10.5), BABS111 (0.5), BABS114 (3.5), BABS118 (7.5).
 
 ```{r GDS, warning=FALSE, message=FALSE}
 d.GDS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, GDS) %>%
@@ -525,7 +479,6 @@ p.GDS
 ```
 
 ### Mood and Anxiety Symptom Questionnaire (MASQ-30)
-Subscores range from 10-50 (integers only). The following participants have scores that are not integers: BABS070 (MASQ_GD = 13.5, MASQ_AD = 26.5), BABS072 (MASQ_GD = 16.5), BABS111 (MASQ_AA = 14.5).
 
 ```{r MASQ, warning=FALSE, message=FALSE}
 d.MASQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("MASQ")) %>%
@@ -549,7 +502,6 @@ p.MASQ
 ```
 
 ### Penn State Worry Questionnaire
-Scores range from 16-80 (integers only). The following participants have scores that are not integers: BABS029 (50.13), BABS038 (21.9375), BABS041(39.31), BABS045 (55.47), BABS083 (29.87), BABS092 (45.87).
 
 ```{r PSWQ, warning=FALSE, message=FALSE}
 d.PSWQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, PSWQ) %>%
@@ -571,7 +523,6 @@ p.PSWQ
 
 ## Sleep {.tabset}
 ### Pittsburgh Sleep Quality Index (PSQI)
-BABS284 (PSQI_DISTB = 12; range=0-3). Integer values only acceptable; BABS057 (PSQI_SLPQUAL = 1.5), BABS159 (PSQI_SLPQUAL = 1.5).
 
 ```{r PSQI, warning=FALSE, message=FALSE}
 d.PSQI <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("PSQI")) %>%
@@ -594,33 +545,8 @@ p.PSQI <- ggplot(d.PSQI.long, aes(Score)) +
 p.PSQI
 ```
 
-### Berkeley Retrospective Sleep Questionnaire (BRSQ)
-This instrument has not been scored.
-
-```{r BRSQ, warning=FALSE, message=FALSE}
-d.BRSQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, BRSQ) %>%
-                                          distinct(BABS_ID, .keep_all = T) %>%
-  mutate_at(vars(starts_with("BRSQ")), as.numeric)
-#counting the number of observations and summarizing mean & SD
-BRSQ.sum <- d.BRSQ %>% describe() %>% select(-vars) %>% rownames_to_column(var = "Variable") %>%
-  filter(Variable != "BABS_ID*") %>% filter(Variable != "AGE AT SESSION")
-
-kable(BRSQ.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
-      caption = "Berkeley Sleep Summary Table") %>% kable_styling()
-#plotting distribution of scores
-p.BRSQ <- ggplot(d.BRSQ, aes(BRSQ)) +
-  geom_bar() + 
-  labs(title = "BRSQ Scores in BABS Sample") +
-  theme_classic()
-p.BRSQ
-```
-
 ## Meta-cognition {.tabset}
 ### Metamemory Questionnaire for Older Adults
-Note: Scores should be integers only (General range: 18-90; Ability range: 20-100; Strategy range: 19-95). Table printed below with values not entered as integers.
-
-Following scores are out of range (_GENERAL): BABS112, BABS134, BABS151, BABS132, BABS133, BABS152
-Following scores are out of range (_STRATEGIES): BABS152
 
 ```{r OA_Metamemory, warning=FALSE, message=FALSE}
 d.Metamem <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("METAMEMORY")) %>%
@@ -649,13 +575,6 @@ kable(flag.metamem, caption = "Incorrectly entered (non-integer) values for the 
 ```
 
 ### Behavior Rating Inventory of Executive Function-Adult (BRIEF-A)
-Note: Scores should be integers only (Total range : 32-224; WM range: 8-56; Initiate range: 8-56; PO range: 10-70; TM range: 6-42). The following values were entered as non-integers: BABS007 (BRIEF_WM = 14.5, BRIEF_TOTAL = 46.5); BABS014 (BRIEF_PO = 20.5, BRIEF_TOTAL = 77.5), BABS171 (BRIEF_TM = 9.5, BRIEF_TOTAL = 42.5). 
-
-Following scores are out of range: BABS284(0s are not an acceptable value; multiple subscales), BABS260 (BRIEF_WM = 72, BRIEF_PO = 71, BRIEF_TM = 57, BRIEF_TOTAL = 36), BABS264 (BRIEF_WM = 65, BRIEF_PO = 77, BRIEF_TM = 75, BRIEF_TOTAL = 28), BABS199 (BRIEF_WM = 62, BRIEF_PO = 73, BRIEF_TM = 75, BRIEF_TOTAL = 28).
-
-It appears that in instances when there were no observed rawscore, a scores of 0 was entered for "_TOTAL"; should double-check that the following participants do not have any raw scores and then remove 0s from data frame for "_TOTAL"
-
-The following participants have a "BRIEF_TOTAL" == 0:  "BABS010" "BABS022" "BABS070" "BABS107" "BABS120" "BABS165" "BABS168" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192" "BABS193" "BABS194" "BABS195" "BABS196" "BABS197" "BABS198" "BABS200"
 
 ```{r Brief_A, warning=FALSE, message=FALSE}
 d.BRIEF <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BRIEF")) %>%
@@ -680,7 +599,6 @@ p.BRIEF
 
 ## Motivation {.tabset}
 ### Selection-Optimization-Compensation Questionnaire (SOCQ)
-Scores should be integers only (each subscale ranges from 0-12; total= 0-48). There are many instances of non-integer values, so printing a data frame with the incorrect values & subject IDs below.
 
 ```{r SOCQ, warning=FALSE, message=FALSE}
 d.SOCQ <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("SOCQ")) %>%
@@ -709,7 +627,6 @@ kable(flag.socq, caption = "Incorrectly entered values for the SOCQ") %>% kable_
 ```
 
 ### BIS/BAS
-Note: Ranges for fun-seeking and drive scales are not within the permissible values of the instrument. BABS_072 has a BAS_D score of 110; fun-seeking scores for BABS_012 (31) and BABS_073 (24) are also outside of allowable range.
 
 ```{r BISBAS, warning=FALSE, message=FALSE}
 d.BISBAS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BISBAS")) %>%
@@ -733,7 +650,6 @@ p.BISBAS
 ```
 
 ### Barratt Impulsiveness Scale (BIS-11)
-Note: Missing the scoring of the first-order BIS scales.
 
 ```{r BIS, warning=FALSE, message=FALSE}
 d.BIS <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("BIS_")) %>%
@@ -757,9 +673,6 @@ p.BIS
 ```
 
 ### Grit Scale
-Note: Range of "GRIT_SCORE" can only range from 1 to 5; it appears that in instances when there was no observed "GRIT_RAW" score, a score of 0 was entered for "GRIT_SCORE"; should double-check that the following participants do not have any Grit scores and then remove 0s from data frame for "GRIT_SCORE"
-
-The following participants have a "GRIT_SCORE" == 0: "BABS118" "BABS120" "BABS121" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192"
 
 ```{r Grit, warning=FALSE, message=FALSE}
 d.Grit <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("GRIT")) %>%
@@ -783,9 +696,6 @@ p.Grit
 ```
 
 ### Zimbardo Time Perspective Scale
-Note: It appears that in instances when there was no observed "_RAW" score, a score of 0 was entered for "_SCORE"; should double-check that the following participants do not have any raw scores and then remove 0s from data frame for "_SCORE" variables
-
-The following participants have a "_SCORE" == 0: "BABS010" "BABS082" "BABS107" "BABS120" "BABS121" "BABS124" "BABS127" "BABS153" "BABS163" "BABS165" "BABS167" "BABS168" "BABS169" "BABS170" "BABS172" "BABS174" "BABS175" "BABS176" "BABS177" "BABS178" "BABS179" "BABS180" "BABS181" "BABS182" "BABS183" "BABS184" "BABS185" "BABS186" "BABS187" "BABS188" "BABS189" "BABS190" "BABS191" "BABS192"
 
 ```{r ZTPS, warning=FALSE, message=FALSE}
 d.ZTP <- BABS.NP.sess1 %>% select(BABS_ID, `AGE AT SESSION`, starts_with("ZTP")) %>%
@@ -797,13 +707,4 @@ ZTP.sum <- d.ZTP %>% describe() %>% select(-vars) %>% rownames_to_column(var = "
 
 kable(ZTP.sum, col.names = c("Variable","N","Mean","SD","Median","Trimmed Mean","Median Abs. Deviation","Min","Max","Range","Skew","Kurtosis","SE"),
       caption = "Zimbardo Time Perspective Summary Table") %>% kable_styling()
-```
-
-## Misc {.tabset}
-### UCSF Early Developmental History Form
-Unscored.
-
-```{r UCSF_Dev, warning=FALSE, message=FALSE}
-
-
 ```
